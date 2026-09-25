@@ -4,12 +4,12 @@
 |---|---|
 | **Tagline** | Book appointments in seconds — live availability, zero double bookings. |
 | **Stack** | React Native · Expo (SDK estable más reciente) · Expo Router · TypeScript strict · Supabase |
-| **Plataforma** | Android (objetivo principal) · iOS si es posible |
+| **Plataforma** | Android (v1.0.0) · iOS fuera de la v1.0.0 (código compatible, no verificado) |
 | **Estado** | 📋 Planificado |
 | **Versión del doc** | 1.0 |
 | **Fecha** | 2026-09-25 |
 | **Repo** | `agendo` (GitHub, se crea al empezar) |
-| **Bundle id / package** | `com.malpidev.agendo` *(propuesta)* |
+| **Bundle id / package** | `com.malpidev.agendo` *(confirmado)* |
 
 > Este documento define **qué** se construye y qué no. Es la base para el plan de implementación.
 > Las reglas generales (arquitectura, stack, backend, seguridad, convenciones) viven en
@@ -86,7 +86,7 @@ Lista de servicios activos del negocio con nombre, duración y precio.
 - CA4: Tiene estados de carga (skeleton), vacío ("Aún no hay servicios") y error con "Reintentar".
 
 **F3 · Reserva: profesional → día → horario disponible**
-- CA1: Tras elegir servicio, se listan solo los profesionales que lo ofrecen (`professional_services`), más la opción "Cualquier profesional" *(opcional, ver §17; si no entra, se omite sin afectar el resto)*.
+- CA1: Tras elegir servicio, se listan solo los profesionales que lo ofrecen (`professional_services`). La opción "Cualquier profesional" queda en el roadmap.
 - CA2: El selector de día muestra desde hoy hasta `max_advance_days` (30 por defecto); los días sin horario laboral aparecen deshabilitados.
 - CA3: Los horarios se calculan con el caso de uso `getAvailableSlots` (§6): respetan horario laboral, duración del servicio, citas ocupadas, intervalo de 15 min y antelación mínima.
 - CA4: Si otra persona reserva un horario visible, este desaparece de la lista en ≤ 3 s sin acción del usuario (Realtime).
@@ -141,6 +141,7 @@ estados de carga/vacío/error en cada pantalla, deep link desde la notificación
 ### 3.3 Futuro / Roadmap
 
 - Rol `professional` con agenda propia y bloqueo de huecos.
+- "Cualquier profesional": asignación automática del primer profesional libre.
 - CRUD admin de servicios, profesionales, horarios y `time_off`.
 - Marcar citas como completadas / no-show y métricas simples (ocupación, cancelaciones).
 - Multi-negocio con búsqueda de negocios cercanos.
@@ -410,7 +411,7 @@ Todas las RPC: `set search_path = ''`, nombres calificados, `grant execute` solo
   `verifyOtp({ email, token, type: 'email' })` con el código de 6 dígitos. Sin magic link ni contraseñas, así que no
   hay Redirect URLs ni deep links de auth.
 - **Configuración compartida** (una sola para el proyecto): "Confirm email" activado; plantilla de email genérica con
-  `{{ .Token }}`; SMTP propio en remoto (el SMTP por defecto tiene un límite muy bajo). Ver `CLAUDE.md`.
+  `{{ .Token }}`; SMTP por defecto de Supabase (solo entrega a miembros del equipo; ver `CLAUDE.md`).
 - **Sesión** persistida con `@react-native-async-storage/async-storage`; `autoRefreshToken` controlado con `AppState`.
 - **Perfil:** `auth.users` es compartido entre apps del portafolio, así que **no** se usa un trigger sobre
   `auth.users`: tras el onboarding la app llama a `agendo.ensure_profile(full_name)` (crea el perfil con rol `client`).
@@ -438,7 +439,7 @@ Todas las RPC: `set search_path = ''`, nombres calificados, `grant execute` solo
 - **Remoto (proyecto compartido):** `psql "$SUPABASE_DB_URL" -f supabase/migrations/<archivo>.sql` en orden.
   **Nunca `supabase db push`** (historial de migraciones compartido entre repos). Exponer `agendo` en *API settings*.
   Edge Function: `supabase functions deploy agendo-send-reminders --no-verify-jwt` y `supabase secrets set AGENDO_...` (los secretos son globales al proyecto: siempre con prefijo `AGENDO_`).
-- **`seed.sql`** (datos realistas): negocio "Northside Barber Co." (zona horaria propuesta, ver §17), 3 profesionales,
+- **`seed.sql`** (datos realistas): negocio "Northside Barber Co." (zona horaria `America/Mexico_City`, moneda USD), 3 profesionales,
   6 servicios (15–60 min, precios variados), horarios lun–sáb con pausa de almuerzo, ~25 citas en los últimos 7 y
   próximos 7 días (fechas relativas a `now()` para que la demo nunca esté vacía), usuarios locales
   `client@agendo.dev` y `admin@agendo.dev`. En remoto se aplica solo la parte de catálogo (sin `auth.users`).
@@ -581,7 +582,7 @@ rm -rf app-example
 ```
 
 Después, en `app.json`: `name: "Agendo"`, `slug: "agendo"` (minúsculas, como el repo), `scheme: "agendo"`,
-`android.package` y `ios.bundleIdentifier` = `com.malpidev.agendo` *(propuesta)*, `userInterfaceStyle: "automatic"`.
+`android.package` y `ios.bundleIdentifier` = `com.malpidev.agendo` *(confirmado)*, `userInterfaceStyle: "automatic"`.
 
 **2. Dependencias de runtime.**
 
@@ -776,7 +777,7 @@ Los secretos de Edge Functions son **globales al proyecto compartido**, por eso 
 ## 16. Definición de terminado
 
 Para pasar a ✅ **MVP listo**:
-- [ ] F1–F6 cumplen todos sus criterios de aceptación en Android (e iOS si es posible).
+- [ ] F1–F6 cumplen todos sus criterios de aceptación en Android.
 - [ ] La doble reserva es imposible: probado con dos dispositivos reservando el mismo hueco y con test pgTAP/mock.
 - [ ] Los horarios desaparecen en vivo en *Choose slot* y la agenda admin se actualiza sola.
 - [ ] Llega el recordatorio push de una cita real (development/preview build) y abre el detalle.
@@ -800,11 +801,11 @@ Para 🚀 **Publicado:** APK `v1.0.0` en GitHub Releases + GIF de demo (reserva 
 |---|---|
 | Push no funciona en Expo Go (Android) | Usar development build (`expo-dev-client`) desde el día 1; en demo, notificación local. |
 | Emails de OTP en desarrollo | Bandeja local de Supabase (Inbucket/Mailpit); `EXPO_PUBLIC_DATA_SOURCE=mock` para avanzar en UI. |
-| Límite de emails del SMTP por defecto de Supabase en remoto | SMTP propio (p. ej. Resend free), decidido para todo el proyecto compartido; el revisor usa *Explore demo*. |
+| SMTP por defecto de Supabase: pocos correos por hora y solo a miembros del equipo | Aceptado (sin dominio propio). Local con Mailpit; en remoto, cuentas de prueba vía `generateLink` con la secret key; el revisor usa *Explore demo*. |
 | Zonas horarias y DST en el cálculo de huecos | Todo en la zona del negocio con `@date-fns/tz`; tests específicos de DST. |
 | Broadcast desde BD / políticas en `realtime.messages` (menos documentado que `postgres_changes`) | Prototiparlo primero. Plan B: tabla sin PII `busy_slots` mantenida por trigger y `postgres_changes` sobre ella. |
 | Proyecto Supabase pausado al revisar la demo | Keep-alive + modo demo sin backend. |
-| Semana ajustada (6 features + infraestructura) | Orden de §18; "Cualquier profesional" y el flujo Maestro de admin son recortables. |
+| Semana ajustada (6 features + infraestructura) | Orden de §18; el flujo Maestro de admin es recortable. |
 
 **Supuestos**
 - Un solo negocio por instancia; los profesionales no inician sesión.
@@ -824,11 +825,14 @@ Para 🚀 **Publicado:** APK `v1.0.0` en GitHub Releases + GIF de demo (reserva 
 10. Tests pgTAP locales (no exigidos por el CLAUDE.md).
 11. Tipografía Manrope, paleta teal/coral, datos de demo de barbería.
 
+**Decisiones cerradas (2026-09-25)**
+- Zona horaria del negocio demo `America/Mexico_City`, moneda USD.
+- "Cualquier profesional" → roadmap.
+- Solo Android en v1.0.0; bundle id `com.malpidev.agendo` confirmado.
+- SMTP por defecto de Supabase (sin dominio propio).
+
 **Decisiones abiertas**
-- Zona horaria del negocio demo en el seed (propuesta: `America/Mexico_City`) y moneda (USD vs. local).
-- ¿Incluir "Cualquier profesional" (asignación automática del primero libre) o dejarlo para el roadmap?
-- Confirmar el bundle id `com.malpidev.agendo`.
-- ¿Soportar iOS en el MVP (requiere cuenta de Apple Developer para push)?
+- Ninguna por ahora.
 
 ---
 
