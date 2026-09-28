@@ -5,9 +5,9 @@
 
 ## Avance
 
-`██░░░░░░░░░░░` 2/13 fases terminadas (15 %)
+`███░░░░░░░░░░` 3/13 fases terminadas (23 %)
 
-**Fase actual:** — (siguiente: Fase 03 · Dominio)
+**Fase actual:** — (siguiente: Fase 04 · Backend local)
 **Última actualización:** 2026-09-28
 **Ventana planificada:** semana 1 (28 sep – 4 oct 2026); pulido y release antes del 11 oct.
 
@@ -17,7 +17,7 @@
 |---|---|---|---|---|---|
 | 01 | Andamiaje | `feat/fase-01-andamiaje` | ✅ Terminada | 2026-09-25 | 2026-09-25 |
 | 02 | Core | `feat/fase-02-core` | ✅ Terminada | 2026-09-28 | 2026-09-28 |
-| 03 | Dominio | `feat/fase-03-dominio` | ⏳ Pendiente | — | — |
+| 03 | Dominio | `feat/fase-03-dominio` | ✅ Terminada | 2026-09-28 | 2026-09-28 |
 | 04 | Backend local | `feat/fase-04-backend-local` | ⏳ Pendiente | — | — |
 | 05 | Modo demo | `feat/fase-05-modo-demo` | ⏳ Pendiente | — | — |
 | 06 | Reserva | `feat/fase-06-reserva` | ⏳ Pendiente | — | — |
@@ -56,6 +56,16 @@ Estados: ⏳ Pendiente · 🚧 En progreso · ✅ Terminada · ⛔ Bloqueada
 > - **PR:** enlace o número.
 > - **Decisiones:** qué se decidió y por qué (también va a la tabla de abajo si cambia la definición).
 > - **Pendientes:** lo que quedó para otra fase (con el número de fase destino).
+
+### Fase 03 · Dominio — 2026-09-28
+- **Hecho:**
+  - Modelos e interfaces de repositorio en `domain/` de catalog, booking, appointments, agenda, auth y notifications.
+  - Casos de uso puros: `rangesOverlap`, `getAvailableSlots`, `getBookableDays`, `canModifyAppointment`, `splitAppointments`, `groupAgendaByProfessional`; validaciones zod de auth.
+  - Tests: los 16 casos de `getAvailableSlots` y el resto; cobertura de líneas 100 % en `domain/` con `TZ=UTC`.
+  - `jest.config.js`: `testMatch` explícito para que `test-fixtures.ts` no se trate como suite.
+- **PR:** ver historial de `main` (squash de `feat/fase-03-dominio`).
+- **Decisiones:** ver tabla (métodos añadidos a las interfaces y `listForDay(LocalDate)`).
+- **Pendientes:** ninguno.
 
 ### Fase 02 · Core — 2026-09-28
 - **Hecho:**
@@ -101,6 +111,7 @@ _Entradas anteriores: ninguna._
 | 2026-09-25 | Plan | Los días de calendario se representan como `LocalDate` (`'YYYY-MM-DD'` en la zona del negocio). | Evita errores de zona horaria del dispositivo. |
 | 2026-09-25 | 01 | La plantilla actual de `create-expo-app` (SDK 57) coloca el router en `src/app/` (no en `app/` raíz). Se mantiene esa convención (Expo Router la soporta de forma nativa) en vez de moverlo a `app/` raíz como sugería el archivo de fase. | Es la estructura oficial vigente de `create-expo-app`; moverla sería pelear contra la CLI sin beneficio real. |
 | 2026-09-25 | 01 | `react-native-url-polyfill` sí sigue siendo necesario con `@supabase/supabase-js` 2.117.2 (confirmado en `SupabaseClient.ts` del paquete instalado). | La guía de fase pedía verificarlo antes de instalar. |
+| 2026-09-28 | 03 | Se añaden a las interfaces `CatalogRepository.getService`/`getProfessional` (las pantallas reciben IDs por ruta), el callback `onStatus` en las suscripciones ("Live updates paused") y `AgendaRepository.listForDay(date: LocalDate)` en vez de `Date`. `LiveStatus` y `Unsubscribe` viven en `booking/domain/types.ts` y `auth`/`agenda` lo importan. | La definición §6.4 no los incluía; `LocalDate` sigue la decisión de días de calendario. |
 | 2026-09-28 | 02 | RNTL 14: `render` y `fireEvent` son asíncronos (`await`). Se añade `jest.setup.js` con el mock oficial de AsyncStorage y `"node"` a `types` de tsconfig (el test de tokens lee `global.css`). | Requisitos de las versiones instaladas; el test de tokens garantiza que hex y CSS no divergen. |
 | 2026-09-25 | 01 | `docs/` se excluye de Prettier (`.prettierignore`). | Un `npm run format` inicial reformateaba las tablas Markdown de los documentos de planificación sin necesidad; esos documentos no son código y no deben depender del formateador de JS/TS. |
 | 2026-09-25 | 01 | `tsconfig.json` añade `"types": ["jest"]` y `nativewind-env.d.ts` añade `declare module '*.css';`. | Sin ellos `tsc --noEmit` fallaba: los globals de Jest no se resolvían solos y TypeScript no sabe tipar el import de `global.css` mediante el alias `@/`. |
