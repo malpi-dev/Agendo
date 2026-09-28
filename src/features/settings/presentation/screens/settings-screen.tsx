@@ -1,14 +1,34 @@
 import Constants from 'expo-constants';
+import { useState } from 'react';
 
+import { useRepositoriesOrNull } from '@/core/di';
 import { useSessionStore } from '@/core/session';
-import { AppText, Button, Card, Screen } from '@/core/ui';
+import { AppText, Button, Card, Screen, showToast } from '@/core/ui';
+import { useAuthStore } from '@/features/auth/presentation/auth-store';
+import { useCurrentUser } from '@/features/auth/presentation/hooks/use-current-user';
 
-// Minimal version: phase 11 adds theme selection, profile and sign out.
+// Minimal version: phase 11 adds theme selection and profile editing.
 export default function SettingsScreen() {
   const mode = useSessionStore((s) => s.mode);
   const demoRole = useSessionStore((s) => s.demoRole);
   const setDemoRole = useSessionStore((s) => s.setDemoRole);
   const exitDemo = useSessionStore((s) => s.exitDemo);
+  const repositories = useRepositoriesOrNull();
+  const email = useAuthStore((s) => s.session?.email);
+  const user = useCurrentUser();
+  const [signingOut, setSigningOut] = useState(false);
+
+  // The auth listener clears the cache and the route guards return to Sign in.
+  const signOut = async () => {
+    if (!repositories) return;
+    setSigningOut(true);
+    try {
+      await repositories.auth.signOut();
+    } catch {
+      showToast("Couldn't sign out. Please try again.", 'danger');
+      setSigningOut(false);
+    }
+  };
 
   return (
     <Screen scroll edges={['left', 'right']} className="gap-4 pt-4" testID="settings-screen">
@@ -27,6 +47,25 @@ export default function SettingsScreen() {
             testID="demo-switch-role"
           />
           <Button title="Exit demo" variant="danger" onPress={exitDemo} testID="demo-exit" />
+        </Card>
+      ) : null}
+
+      {mode === 'supabase' ? (
+        <Card className="gap-3">
+          <AppText variant="subtitle">Account</AppText>
+          {user ? <AppText testID="settings-name">{user.fullName}</AppText> : null}
+          {email ? (
+            <AppText tone="muted" variant="caption" testID="settings-email">
+              {email}
+            </AppText>
+          ) : null}
+          <Button
+            title="Sign out"
+            variant="danger"
+            loading={signingOut}
+            onPress={() => void signOut()}
+            testID="sign-out-button"
+          />
         </Card>
       ) : null}
 

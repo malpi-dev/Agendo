@@ -7,5 +7,6 @@ export * from './empty-state';
 export * from './error-state';
 export * from './screen';
 export * from './skeleton';
+export * from './text-field';
 export * from './toast';
 export * from './toast-store';

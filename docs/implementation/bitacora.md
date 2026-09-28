@@ -5,9 +5,9 @@
 
 ## Avance
 
-`██████▒░░░░░░` 6/13 fases terminadas (46 %)
+`███████░░░░░░` 7/13 fases terminadas (54 %)
 
-**Fase actual:** Fase 07 · Auth (⏳, por empezar)
+**Fase actual:** Fase 08 · Mis citas (⏳, por empezar)
 **Última actualización:** 2026-09-28
 **Ventana planificada:** semana 1 (28 sep – 4 oct 2026); pulido y release antes del 11 oct.
 
@@ -21,7 +21,7 @@
 | 04 | Backend local | `feat/fase-04-backend-local` | ✅ Terminada | 2026-09-28 | 2026-09-28 |
 | 05 | Modo demo | `feat/fase-05-modo-demo` | ✅ Terminada | 2026-09-28 | 2026-09-28 |
 | 06 | Reserva | `feat/fase-06-reserva` | ✅ Terminada | 2026-09-28 | 2026-09-28 |
-| 07 | Auth | `feat/fase-07-auth` | ⏳ Pendiente | — | — |
+| 07 | Auth | `feat/fase-07-auth` | ✅ Terminada | 2026-09-28 | 2026-09-28 |
 | 08 | Mis citas | `feat/fase-08-mis-citas` | ⏳ Pendiente | — | — |
 | 09 | Realtime y agenda | `feat/fase-09-realtime-y-agenda` | ⏳ Pendiente | — | — |
 | 10 | Notificaciones | `feat/fase-10-notificaciones` | ⏳ Pendiente | — | — |
@@ -56,6 +56,20 @@ Estados: ⏳ Pendiente · 🚧 En progreso · ✅ Terminada · ⛔ Bloqueada
 > - **PR:** enlace o número.
 > - **Decisiones:** qué se decidió y por qué (también va a la tabla de abajo si cambia la definición).
 > - **Pendientes:** lo que quedó para otra fase (con el número de fase destino).
+
+### Fase 07 · Auth y repositorios Supabase — 2026-09-28
+- **Hecho:**
+  - `core/supabase/run.ts` (`run()` convierte errores devueltos y lanzados en `DomainError`) y `getCurrentUserId`.
+  - Repos Supabase de catálogo, reserva, citas y agenda (con mappers donde el formato difiere); `subscribeToAvailability`/`subscribe` provisionales (`paused`) hasta la fase 09. Repos `auth` y `profile` (Supabase + mock) añadidos a `Repositories`; `createSupabaseRepositories(client)`.
+  - Auth: `useAuthStore`, `useAuthBootstrap`, `useMyProfile`, `useCurrentUser` completo, guards definitivos (`(auth)`, `onboarding`, `(app)`) con splash retenido hasta resolver sesión y perfil, pantalla de error con Retry si falla el perfil.
+  - Pantallas Sign in (RHF + zod), Enter code (`OtpInput`, autoenvío, reenvío con cuenta atrás de 60 s), Onboarding (`ensure_profile`) y Sign out en Settings. Componente `TextField` en `core/ui`.
+  - `unauthorized` global: `setUnauthorizedHandler` en `query-client.ts` (QueryCache/MutationCache) cierra sesión y muestra toast.
+  - `supabase/config.toml`: `[auth.rate_limit] email_sent = 100` (solo local).
+  - Tests: cliente falso encadenable (`src/test/fake-supabase.ts`), repos Supabase y mocks, store, handler de `unauthorized` y pantallas de auth. 230 tests en verde; lint (max-warnings 0), typecheck y format sin errores.
+  - Verificación contra Supabase local (script temporal, no commiteado): OTP real vía Mailpit, código inválido, `ensure_profile`, catálogo, reserva, conflicto `slotUnavailable`, reprogramar, cancelar y `unauthorized` tras sign out: todo correcto.
+- **PR:** #7 (squash de `feat/fase-07-auth`).
+- **Decisiones:** ver tabla (`run()` tipado, onboarding con `setQueryData`, agenda cachea la zona horaria).
+- **Pendientes:** verificación manual en el emulador (Paso 9: flujo completo con `.env` en `supabase`, persistencia de sesión al reiniciar, conflicto con `psql`, `client@agendo.dev` sin onboarding) — la hace el autor; Realtime (fase 09); cancelar/reprogramar en UI (fase 08).
 
 ### Fase 06 · Reserva — 2026-09-28
 - **Hecho:**
@@ -146,6 +160,10 @@ _Entradas anteriores: ninguna._
 | 2026-09-25 | Plan | Los días de calendario se representan como `LocalDate` (`'YYYY-MM-DD'` en la zona del negocio). | Evita errores de zona horaria del dispositivo. |
 | 2026-09-25 | 01 | La plantilla actual de `create-expo-app` (SDK 57) coloca el router en `src/app/` (no en `app/` raíz). Se mantiene esa convención (Expo Router la soporta de forma nativa) en vez de moverlo a `app/` raíz como sugería el archivo de fase. | Es la estructura oficial vigente de `create-expo-app`; moverla sería pelear contra la CLI sin beneficio real. |
 | 2026-09-25 | 01 | `react-native-url-polyfill` sí sigue siendo necesario con `@supabase/supabase-js` 2.117.2 (confirmado en `SupabaseClient.ts` del paquete instalado). | La guía de fase pedía verificarlo antes de instalar. |
+| 2026-09-28 | 07 | `run()` infiere el tipo de `data` de la rama con `error: null` de la respuesta de supabase-js (no `{ data: T }` genérico); `signOut` se envuelve porque no devuelve `data`. | La firma del archivo de fase no compilaba con las uniones de `getSession`/`verifyOtp` ni con las listas `T[] \| null`. |
+| 2026-09-28 | 07 | El onboarding guarda el perfil devuelto por `ensure_profile` con `setQueryData(['profile','mine'])` en vez de invalidar. | Evita un refetch y el guard pasa a `(app)` de inmediato. |
+| 2026-09-28 | 07 | `SupabaseAgendaRepository(client, catalog)` cachea la zona horaria del negocio (sin cachear fallos). | Necesaria para calcular el rango del día. |
+| 2026-09-28 | 07 | `.env` local sigue con `EXPO_PUBLIC_DATA_SOURCE=mock`; para probar contra Supabase hay que cambiarlo a `supabase` y reiniciar Metro con `--clear`. | Las variables `EXPO_PUBLIC_*` se incrustan al compilar; no se toca `.env` (no versionado). |
 | 2026-09-28 | 06 | `eslint.config.js` fija el resolver de TypeScript (`import/resolver: typescript`) para el alias `@/`. | `expo lint` fallaba con `import/no-unresolved` en rutas nuevas aunque `eslint` directo y `tsc` las resolvían. |
 | 2026-09-28 | 06 | Reanimated se mockea a mano en `jest.setup.js` (View + animaciones no-op) y `gcTime: Infinity` también en mutaciones del `QueryClient` de test. | Reanimated 4/Worklets no inicializa bajo Jest (incluso con su mock oficial); el GC de mutaciones dejaba el proceso de Jest sin salir. |
 | 2026-09-28 | 06 | `useNow` vive en `core/time/use-now.ts` y no se exporta desde `core/time/index.ts`. Se añadió `toLocalTime` a `zoned.ts`. | Mantener React fuera de lo que importa `domain/`; los ids de chips usan la hora 24 h del negocio. |

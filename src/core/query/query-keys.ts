@@ -2,6 +2,7 @@ import type { LocalDate } from '@/core/time';
 
 /** Every TanStack Query key lives here; they are also used to invalidate. */
 export const queryKeys = {
+  profileMine: ['profile', 'mine'] as const,
   business: ['business'] as const,
   services: ['services'] as const,
   service: (id: string) => ['services', id] as const,
