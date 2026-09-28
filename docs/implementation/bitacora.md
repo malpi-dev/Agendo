@@ -5,9 +5,9 @@
 
 ## Avance
 
-`████░░░░░░░░░` 4/13 fases terminadas (31 %)
+`█████░░░░░░░░` 5/13 fases terminadas (38 %)
 
-**Fase actual:** — (siguiente: Fase 05 · Modo demo)
+**Fase actual:** — (siguiente: Fase 06 · Reserva)
 **Última actualización:** 2026-09-28
 **Ventana planificada:** semana 1 (28 sep – 4 oct 2026); pulido y release antes del 11 oct.
 
@@ -19,7 +19,7 @@
 | 02 | Core | `feat/fase-02-core` | ✅ Terminada | 2026-09-28 | 2026-09-28 |
 | 03 | Dominio | `feat/fase-03-dominio` | ✅ Terminada | 2026-09-28 | 2026-09-28 |
 | 04 | Backend local | `feat/fase-04-backend-local` | ✅ Terminada | 2026-09-28 | 2026-09-28 |
-| 05 | Modo demo | `feat/fase-05-modo-demo` | ⏳ Pendiente | — | — |
+| 05 | Modo demo | `feat/fase-05-modo-demo` | ✅ Terminada | 2026-09-28 | 2026-09-28 |
 | 06 | Reserva | `feat/fase-06-reserva` | ⏳ Pendiente | — | — |
 | 07 | Auth | `feat/fase-07-auth` | ⏳ Pendiente | — | — |
 | 08 | Mis citas | `feat/fase-08-mis-citas` | ⏳ Pendiente | — | — |
@@ -56,6 +56,18 @@ Estados: ⏳ Pendiente · 🚧 En progreso · ✅ Terminada · ⛔ Bloqueada
 > - **PR:** enlace o número.
 > - **Decisiones:** qué se decidió y por qué (también va a la tabla de abajo si cambia la definición).
 > - **Pendientes:** lo que quedó para otra fase (con el número de fase destino).
+
+### Fase 05 · Modo demo — 2026-09-28
+- **Hecho:**
+  - Fixtures idénticos al seed (verificado contra la BD), `MockDb` con reloj inyectable, latencia y eventos.
+  - 4 repositorios mock (catalog, booking, appointments, agenda) con las mismas reglas y `DomainError` que la BD; simulación de reserva concurrente a los 5 s.
+  - `RepositoryProvider`/`useRepositories`, `useSessionStore` (`enterDemo`/`setDemoRole`/`exitDemo`, limpian la caché) y `useCurrentUser`.
+  - Rutas con `Stack.Protected` (`(auth)` / `(app)`), tabs con iconos, badge "Demo", Agenda oculta y protegida para clientes.
+  - Pantallas: Sign in + selector de rol, Home (lista servicios), Appointments/Agenda provisionales, Settings mínimo. 154 tests en verde.
+  - Verificado en Android (Expo Go): Explore demo → Client/Admin → tabs, cambio de rol y salida del demo.
+- **PR:** ver historial de `main` (squash de `feat/fase-05-modo-demo`).
+- **Decisiones:** ver tabla (iconos, comparación con el seed, simulación concurrente).
+- **Pendientes:** repos `supabase-*`, auth y perfil (fase 07); reemplazo de pantallas provisionales (fases 06, 08, 09, 11).
 
 ### Fase 04 · Backend local — 2026-09-28
 - **Hecho:**
@@ -123,6 +135,9 @@ _Entradas anteriores: ninguna._
 | 2026-09-25 | Plan | Los días de calendario se representan como `LocalDate` (`'YYYY-MM-DD'` en la zona del negocio). | Evita errores de zona horaria del dispositivo. |
 | 2026-09-25 | 01 | La plantilla actual de `create-expo-app` (SDK 57) coloca el router en `src/app/` (no en `app/` raíz). Se mantiene esa convención (Expo Router la soporta de forma nativa) en vez de moverlo a `app/` raíz como sugería el archivo de fase. | Es la estructura oficial vigente de `create-expo-app`; moverla sería pelear contra la CLI sin beneficio real. |
 | 2026-09-25 | 01 | `react-native-url-polyfill` sí sigue siendo necesario con `@supabase/supabase-js` 2.117.2 (confirmado en `SupabaseClient.ts` del paquete instalado). | La guía de fase pedía verificarlo antes de instalar. |
+| 2026-09-28 | 05 | Se instala `@expo/vector-icons` (15.1.1) con `expo install` para los iconos de las tabs (Ionicons). | No venía en la plantilla SDK 57 y la fase pide Ionicons. |
+| 2026-09-28 | 05 | Los fixtures de `buildDemoAppointments` se compararon contra el seed real de la BD (33 citas): idénticos en profesional, servicio, cliente, hora y estado. | Garantiza que demo y remoto muestren lo mismo. |
+| 2026-09-28 | 05 | La simulación de reserva concurrente marca `concurrentBookingSimulated` cuando se dispara (no al suscribirse) y solo si la última consulta de ocupados es de ese profesional. | Así, salir de la pantalla antes de 5 s no gasta la demostración. |
 | 2026-09-28 | 04 | Las políticas de `agendo_availability_broadcast_read` y `agendo_agenda_broadcast_read` tocan `realtime.messages` (fuera del schema `agendo`), con nombres prefijados `agendo_` y limitadas a topics `agendo:*`. | Realtime Broadcast con canales privados; exigido por la convención del proyecto compartido. |
 | 2026-09-28 | 04 | `realtime.send(payload, event, topic, private)` funciona con la firma indicada en la CLI 2.118.0; sin cambios. `project_id` local = `agendo` (minúsculas). | Verificado: los triggers generan 2 mensajes por cita. |
 | 2026-09-28 | 04 | Orden de generación del seed (rotación de clientes y "1 de cada 4 cancelada"): días ascendentes; hoy = Marco 10:00, Marco 15:00, Lena 11:00, Lena 16:30, Sam 12:00; otros días = Marco 10:00, Lena 15:00. La rotación de clientes cuenta todas las citas ficticias; la cancelación cuenta solo las de días ≠ hoy. | El archivo de fase no fijaba si el contador de cancelación era global; así queda determinista para replicarlo en la fase 05. |

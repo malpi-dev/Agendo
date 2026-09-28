@@ -1,4 +1,4 @@
-// Temporary component catalog (kitchen sink). Replaced by the real entry route in phase 05.
+// Dev-only component catalog (no route). Render it temporarily from a screen to review the design system.
 import { View } from 'react-native';
 
 import { DomainError } from '@/core/errors';
@@ -17,7 +17,7 @@ import {
 
 const PREFERENCES: ThemePreference[] = ['system', 'light', 'dark'];
 
-export default function KitchenSink() {
+export function KitchenSinkScreen() {
   const { preference, setPreference } = useThemeStore();
 
   return (
