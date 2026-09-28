@@ -6,6 +6,10 @@ const eslintConfigPrettier = require('eslint-config-prettier');
 module.exports = defineConfig([
   expoConfig,
   {
+    // Resolve the `@/` alias through tsconfig paths (same as the editor and Metro).
+    settings: { 'import/resolver': { typescript: { project: './tsconfig.json' }, node: true } },
+  },
+  {
     ignores: [
       'src/core/supabase/database.generated.ts',
       'dist/*',
