@@ -3,7 +3,7 @@ import { fireEvent, screen, waitFor } from '@testing-library/react-native';
 import { DomainError } from '@/core/errors';
 import { at } from '@/features/booking/domain/__tests__/test-fixtures';
 import { MockBookingRepository } from '@/features/booking/data/mock-booking-repository';
-import { makeDb } from '@/features/demo/data/__tests__/test-db';
+import { FIXED_NOW, makeDb } from '@/features/demo/data/__tests__/test-db';
 import { PROFESSIONAL_IDS, SERVICE_IDS } from '@/features/demo/data/fixtures';
 import { renderWithProviders } from '@/test/render-with-providers';
 
@@ -17,7 +17,7 @@ const props = {
 };
 
 const failingBooking = (
-  code: 'slotUnavailable' | 'clientOverlap' | 'network',
+  code: 'slotUnavailable' | 'clientOverlap' | 'network' | 'cancellationWindowClosed',
 ): BookingRepository => ({
   ...new MockBookingRepository(makeDb()),
   getBusyRanges: async () => [],
@@ -104,5 +104,65 @@ describe('ConfirmBookingContent', () => {
       />,
     );
     await waitFor(() => expect(screen.getByTestId('confirm-error')).toBeTruthy());
+  });
+
+  describe('rescheduling', () => {
+    it('shows Before → After and calls reschedule instead of book', async () => {
+      const db = makeDb();
+      const casey = db.appointments.find(
+        (a) => a.clientId === db.currentUser.id && a.status === 'booked' && a.start > FIXED_NOW,
+      );
+      if (!casey) throw new Error('fixture missing');
+      const onRescheduled = jest.fn();
+      const onBooked = jest.fn();
+      await renderWithProviders(
+        <ConfirmBookingContent
+          serviceId={casey.serviceId}
+          professionalId={casey.professionalId}
+          start={new Date(casey.start.getTime() + 24 * 3_600_000)}
+          rescheduleId={casey.id}
+          onBooked={onBooked}
+          onConflict={jest.fn()}
+          onRescheduled={onRescheduled}
+        />,
+        { db },
+      );
+      await waitFor(() => expect(screen.getByTestId('reschedule-before')).toBeTruthy());
+      expect(screen.getByTestId('reschedule-after')).toBeTruthy();
+      expect(screen.getByText('Confirm new time')).toBeTruthy();
+
+      const originalStart = casey.start.getTime();
+      await fireEvent.press(screen.getByTestId('confirm-booking-button'));
+      await waitFor(() => expect(onRescheduled).toHaveBeenCalledTimes(1));
+      expect(onBooked).not.toHaveBeenCalled();
+      expect(onRescheduled.mock.calls[0]?.[0]).toMatchObject({ id: casey.id });
+      expect(db.appointments.find((a) => a.id === casey.id)?.start.getTime()).not.toBe(
+        originalStart,
+      );
+    });
+
+    it('offers to go back when the change window has closed', async () => {
+      const onBack = jest.fn();
+      const db = makeDb();
+      const casey = db.appointments.find((a) => a.clientId === db.currentUser.id);
+      if (!casey) throw new Error('fixture missing');
+      await renderWithProviders(
+        <ConfirmBookingContent
+          {...props}
+          rescheduleId={casey.id}
+          onBooked={jest.fn()}
+          onConflict={jest.fn()}
+          onRescheduled={jest.fn()}
+          onBackToAppointment={onBack}
+        />,
+        { db, repositories: { booking: failingBooking('cancellationWindowClosed') } },
+      );
+      await waitFor(() => expect(screen.getByTestId('confirm-booking-button')).toBeTruthy());
+      await fireEvent.press(screen.getByTestId('confirm-booking-button'));
+      await waitFor(() => expect(screen.getByTestId('back-to-appointment-button')).toBeTruthy());
+      expect(screen.getByTestId('confirm-inline-error')).toBeTruthy();
+      await fireEvent.press(screen.getByTestId('back-to-appointment-button'));
+      expect(onBack).toHaveBeenCalledTimes(1);
+    });
   });
 });

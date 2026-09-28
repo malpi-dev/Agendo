@@ -5,9 +5,9 @@
 
 ## Avance
 
-`███████░░░░░░` 7/13 fases terminadas (54 %)
+`████████░░░░░` 8/13 fases terminadas (62 %)
 
-**Fase actual:** Fase 08 · Mis citas (⏳, por empezar)
+**Fase actual:** Fase 09 · Realtime y agenda (⏳, por empezar)
 **Última actualización:** 2026-09-28
 **Ventana planificada:** semana 1 (28 sep – 4 oct 2026); pulido y release antes del 11 oct.
 
@@ -22,7 +22,7 @@
 | 05 | Modo demo | `feat/fase-05-modo-demo` | ✅ Terminada | 2026-09-28 | 2026-09-28 |
 | 06 | Reserva | `feat/fase-06-reserva` | ✅ Terminada | 2026-09-28 | 2026-09-28 |
 | 07 | Auth | `feat/fase-07-auth` | ✅ Terminada | 2026-09-28 | 2026-09-28 |
-| 08 | Mis citas | `feat/fase-08-mis-citas` | ⏳ Pendiente | — | — |
+| 08 | Mis citas | `feat/fase-08-mis-citas` | ✅ Terminada | 2026-09-28 | 2026-09-28 |
 | 09 | Realtime y agenda | `feat/fase-09-realtime-y-agenda` | ⏳ Pendiente | — | — |
 | 10 | Notificaciones | `feat/fase-10-notificaciones` | ⏳ Pendiente | — | — |
 | 11 | Ajustes y pulido | `feat/fase-11-ajustes-y-pulido` | ⏳ Pendiente | — | — |
@@ -56,6 +56,18 @@ Estados: ⏳ Pendiente · 🚧 En progreso · ✅ Terminada · ⛔ Bloqueada
 > - **PR:** enlace o número.
 > - **Decisiones:** qué se decidió y por qué (también va a la tabla de abajo si cambia la definición).
 > - **Pendientes:** lo que quedó para otra fase (con el número de fase destino).
+
+### Fase 08 · Mis citas — 2026-09-28
+- **Hecho:**
+  - Hooks: `useMyAppointments` (lista + `splitAppointments` con `useNow`), `useCancelAppointment`, `useModifyDecision` y `useRescheduleAppointment` (en `booking`); cancelar/reprogramar invalidan `appointments`, `busy` y `agenda` (y `appointments` también al fallar, por si la ventana se cerró).
+  - Componentes `AppointmentCard` (barra de color + badge Upcoming/Completed/Cancelled) y `ModifyNotice`.
+  - Pestaña *Appointments*: `FlashList` con cabeceras de sección, nota corta por sección vacía, vacío total con "Book now", skeleton, error con Retry y pull-to-refresh.
+  - Detalle: botones Reschedule / Cancel appointment (deshabilitados con motivo fuera de la ventana; ocultos si está cancelada o pasada), confirmación con `Alert`, toast, estado `notFound` con "Back to appointments".
+  - Reprogramar reutiliza *Choose slot* (título "Reschedule" + banner "Current: …") y *Confirm* (Before → After, "Confirm new time", `reschedule` atómico; `slotUnavailable` vuelve a la lista; `cancellationWindowClosed` muestra mensaje y "Back to appointment").
+  - Tests: pantalla de citas (orden/secciones, vacío, sección vacía, error), detalle (dentro/fuera de ventana, cancelada, cancelar con Alert, notFound) y confirm en modo reprogramar. 241 tests en verde; lint (max-warnings 0), typecheck y format sin errores.
+- **PR:** #9 (squash de `feat/fase-08-mis-citas`).
+- **Decisiones:** ver tabla (mock de FlashList en Jest).
+- **Pendientes:** verificación manual del Paso 7 (demo y Supabase local, incl. cancelar por RPC como otro usuario) — la hace el autor; en *Choose slot* al reprogramar, el horario actual de la propia cita aparece ocupado (la RPC sí lo permite); Realtime y agenda (fase 09).
 
 ### Fase 07 · Auth y repositorios Supabase — 2026-09-28
 - **Hecho:**
@@ -160,6 +172,7 @@ _Entradas anteriores: ninguna._
 | 2026-09-25 | Plan | Los días de calendario se representan como `LocalDate` (`'YYYY-MM-DD'` en la zona del negocio). | Evita errores de zona horaria del dispositivo. |
 | 2026-09-25 | 01 | La plantilla actual de `create-expo-app` (SDK 57) coloca el router en `src/app/` (no en `app/` raíz). Se mantiene esa convención (Expo Router la soporta de forma nativa) en vez de moverlo a `app/` raíz como sugería el archivo de fase. | Es la estructura oficial vigente de `create-expo-app`; moverla sería pelear contra la CLI sin beneficio real. |
 | 2026-09-25 | 01 | `react-native-url-polyfill` sí sigue siendo necesario con `@supabase/supabase-js` 2.117.2 (confirmado en `SupabaseClient.ts` del paquete instalado). | La guía de fase pedía verificarlo antes de instalar. |
+| 2026-09-28 | 08 | `jest.setup.js` mockea `@shopify/flash-list` con `src/test/flash-list-mock.tsx` (renderiza todas las filas) en vez de usar `@shopify/flash-list/jestSetup`. | El `jestSetup` incluido en 2.0.2 referencia `RecyclerView`, que el paquete ya no exporta, y rompe el render. |
 | 2026-09-28 | 07 | `run()` infiere el tipo de `data` de la rama con `error: null` de la respuesta de supabase-js (no `{ data: T }` genérico); `signOut` se envuelve porque no devuelve `data`. | La firma del archivo de fase no compilaba con las uniones de `getSession`/`verifyOtp` ni con las listas `T[] \| null`. |
 | 2026-09-28 | 07 | El onboarding guarda el perfil devuelto por `ensure_profile` con `setQueryData(['profile','mine'])` en vez de invalidar. | Evita un refetch y el guard pasa a `(app)` de inmediato. |
 | 2026-09-28 | 07 | `SupabaseAgendaRepository(client, catalog)` cachea la zona horaria del negocio (sin cachear fallos). | Necesaria para calcular el rango del día. |

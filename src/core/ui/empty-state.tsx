@@ -8,10 +8,18 @@ interface EmptyStateProps {
   message?: string;
   actionLabel?: string;
   onAction?: () => void;
+  actionTestID?: string;
   testID?: string;
 }
 
-export function EmptyState({ title, message, actionLabel, onAction, testID }: EmptyStateProps) {
+export function EmptyState({
+  title,
+  message,
+  actionLabel,
+  onAction,
+  actionTestID,
+  testID,
+}: EmptyStateProps) {
   return (
     <View testID={testID} className="flex-1 items-center justify-center gap-2 p-8">
       <AppText variant="subtitle" className="text-center">
@@ -23,7 +31,13 @@ export function EmptyState({ title, message, actionLabel, onAction, testID }: Em
         </AppText>
       ) : null}
       {actionLabel && onAction ? (
-        <Button title={actionLabel} onPress={onAction} variant="secondary" className="mt-4" />
+        <Button
+          title={actionLabel}
+          onPress={onAction}
+          variant="secondary"
+          className="mt-4"
+          testID={actionTestID}
+        />
       ) : null}
     </View>
   );
