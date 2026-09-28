@@ -1,3 +1,6 @@
+// FlashList measures its layout natively (its bundled jestSetup is broken in 2.0.x): render every row instead.
+jest.mock('@shopify/flash-list', () => require('./src/test/flash-list-mock'));
+
 jest.mock('@react-native-async-storage/async-storage', () =>
   require('@react-native-async-storage/async-storage/jest/async-storage-mock'),
 );

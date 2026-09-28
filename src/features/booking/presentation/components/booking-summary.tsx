@@ -22,16 +22,47 @@ interface BookingSummaryProps {
   professional: Professional;
   business: Business;
   start: Date;
+  /** Rescheduling: the current time, shown next to the new one. */
+  previousStart?: Date;
 }
 
-export function BookingSummary({ service, professional, business, start }: BookingSummaryProps) {
+export function BookingSummary({
+  service,
+  professional,
+  business,
+  start,
+  previousStart,
+}: BookingSummaryProps) {
   const tz = business.timezone;
   return (
     <Card testID="booking-summary" className="gap-3">
       <Row label="Service" value={service.name} />
       <Row label="Professional" value={professional.name} />
-      <Row label="Date" value={formatLongDate(start, tz)} />
-      <Row label="Time" value={formatTime(start, tz)} />
+      {previousStart ? (
+        <>
+          <View testID="reschedule-before" className="gap-1">
+            <AppText variant="caption" tone="muted">
+              Before
+            </AppText>
+            <AppText tone="muted" className="line-through" tabular>
+              {formatLongDate(previousStart, tz)} · {formatTime(previousStart, tz)}
+            </AppText>
+          </View>
+          <View testID="reschedule-after" className="gap-1">
+            <AppText variant="caption" tone="primary">
+              After
+            </AppText>
+            <AppText variant="subtitle" tabular>
+              {formatLongDate(start, tz)} · {formatTime(start, tz)}
+            </AppText>
+          </View>
+        </>
+      ) : (
+        <>
+          <Row label="Date" value={formatLongDate(start, tz)} />
+          <Row label="Time" value={formatTime(start, tz)} />
+        </>
+      )}
       <Row label="Duration" value={`${service.durationMinutes} min`} />
       <Row label="Price" value={formatPrice(service.priceCents, business.currency)} />
       <AppText variant="caption" tone="muted">

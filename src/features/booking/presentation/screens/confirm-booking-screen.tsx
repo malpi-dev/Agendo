@@ -29,13 +29,26 @@ export default function ConfirmBookingScreen() {
       </Screen>
     );
   }
-  const { serviceId, professionalId, start } = parsed.data;
+  const { serviceId, professionalId, start, rescheduleId } = parsed.data;
 
   const onBooked = (appointment: Appointment) => {
     void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     showToast('Booked!', 'success');
     router.dismissAll();
     router.push({ pathname: '/appointments/[id]', params: { id: appointment.id } });
+  };
+
+  const onRescheduled = (appointment: Appointment) => {
+    void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    showToast('Rescheduled', 'success');
+    router.dismissAll();
+    router.push({ pathname: '/appointments/[id]', params: { id: appointment.id } });
+  };
+
+  const onBackToAppointment = () => {
+    if (!rescheduleId) return;
+    router.dismissAll();
+    router.push({ pathname: '/appointments/[id]', params: { id: rescheduleId } });
   };
 
   const onConflict = () => {
@@ -50,8 +63,11 @@ export default function ConfirmBookingScreen() {
         serviceId={serviceId}
         professionalId={professionalId}
         start={new Date(start)}
+        rescheduleId={rescheduleId}
         onBooked={onBooked}
         onConflict={onConflict}
+        onRescheduled={onRescheduled}
+        onBackToAppointment={onBackToAppointment}
       />
     </Screen>
   );

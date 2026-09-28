@@ -1,4 +1,4 @@
-import { router, useLocalSearchParams } from 'expo-router';
+import { router, Stack, useLocalSearchParams } from 'expo-router';
 import { useMemo, useState } from 'react';
 import { ScrollView } from 'react-native';
 
@@ -9,6 +9,7 @@ import { useBusiness } from '@/features/catalog/presentation/hooks/use-business'
 import { useWorkingHours } from '@/features/catalog/presentation/hooks/use-working-hours';
 
 import { getBookableDays } from '../../domain/get-bookable-days';
+import { RescheduleBanner } from '../components/reschedule-banner';
 import { ChooseSlotView } from '../components/choose-slot-view';
 import { useAvailabilitySubscription } from '../hooks/use-availability-subscription';
 import { useAvailableSlots } from '../hooks/use-available-slots';
@@ -65,10 +66,12 @@ export default function ChooseSlotScreen() {
 
   return (
     <Screen edges={['left', 'right']} testID="choose-slot-screen">
+      {rescheduleId ? <Stack.Screen options={{ title: 'Reschedule' }} /> : null}
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: 24 }}
       >
+        {rescheduleId ? <RescheduleBanner appointmentId={rescheduleId} /> : null}
         <ChooseSlotView
           days={days}
           selectedDate={selectedDate}
