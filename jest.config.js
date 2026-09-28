@@ -1,6 +1,7 @@
 module.exports = {
   preset: 'jest-expo',
   globalSetup: './jest.global-setup.js',
+  testMatch: ['**/*.test.[jt]s?(x)'],
   setupFiles: ['./jest.setup.js'],
   moduleNameMapper: { '^@/(.*)$': '<rootDir>/src/$1' },
   testPathIgnorePatterns: ['/node_modules/', '/supabase/', '/.maestro/'],
