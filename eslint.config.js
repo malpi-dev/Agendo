@@ -6,7 +6,15 @@ const eslintConfigPrettier = require('eslint-config-prettier');
 module.exports = defineConfig([
   expoConfig,
   {
-    ignores: ['dist/*', 'supabase/functions/**', '.expo/**', 'android/**', 'ios/**', 'coverage/**'],
+    ignores: [
+      'src/core/supabase/database.generated.ts',
+      'dist/*',
+      'supabase/functions/**',
+      '.expo/**',
+      'android/**',
+      'ios/**',
+      'coverage/**',
+    ],
   },
   {
     files: ['src/features/*/domain/**/*.{ts,tsx}'],

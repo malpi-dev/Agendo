@@ -7,3 +7,4 @@ coverage
 supabase/.temp
 *.generated.ts
 docs
+supabase/templates

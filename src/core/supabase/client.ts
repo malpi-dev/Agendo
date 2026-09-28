@@ -5,8 +5,10 @@ import { AppState } from 'react-native';
 
 import { env } from '@/core/config/env';
 
+import type { Database } from './database.generated';
+
 function createAgendoClient(url: string, key: string) {
-  return createClient(url, key, {
+  return createClient<Database, 'agendo'>(url, key, {
     db: { schema: 'agendo' },
     auth: {
       storage: AsyncStorage,

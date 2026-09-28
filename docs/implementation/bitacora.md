@@ -5,9 +5,9 @@
 
 ## Avance
 
-`███░░░░░░░░░░` 3/13 fases terminadas (23 %)
+`████░░░░░░░░░` 4/13 fases terminadas (31 %)
 
-**Fase actual:** — (siguiente: Fase 04 · Backend local)
+**Fase actual:** — (siguiente: Fase 05 · Modo demo)
 **Última actualización:** 2026-09-28
 **Ventana planificada:** semana 1 (28 sep – 4 oct 2026); pulido y release antes del 11 oct.
 
@@ -18,7 +18,7 @@
 | 01 | Andamiaje | `feat/fase-01-andamiaje` | ✅ Terminada | 2026-09-25 | 2026-09-25 |
 | 02 | Core | `feat/fase-02-core` | ✅ Terminada | 2026-09-28 | 2026-09-28 |
 | 03 | Dominio | `feat/fase-03-dominio` | ✅ Terminada | 2026-09-28 | 2026-09-28 |
-| 04 | Backend local | `feat/fase-04-backend-local` | ⏳ Pendiente | — | — |
+| 04 | Backend local | `feat/fase-04-backend-local` | ✅ Terminada | 2026-09-28 | 2026-09-28 |
 | 05 | Modo demo | `feat/fase-05-modo-demo` | ⏳ Pendiente | — | — |
 | 06 | Reserva | `feat/fase-06-reserva` | ⏳ Pendiente | — | — |
 | 07 | Auth | `feat/fase-07-auth` | ⏳ Pendiente | — | — |
@@ -56,6 +56,18 @@ Estados: ⏳ Pendiente · 🚧 En progreso · ✅ Terminada · ⛔ Bloqueada
 > - **PR:** enlace o número.
 > - **Decisiones:** qué se decidió y por qué (también va a la tabla de abajo si cambia la definición).
 > - **Pendientes:** lo que quedó para otra fase (con el número de fase destino).
+
+### Fase 04 · Backend local — 2026-09-28
+- **Hecho:**
+  - Supabase local inicializado (`config.toml`: schema `agendo` expuesto, confirmaciones de email activas, OTP de 6 dígitos, plantilla local `otp.html`).
+  - 3 migraciones (`agendo_schema`, `agendo_rls`, `agendo_rpc`): 8 tablas, `EXCLUDE` de doble reserva y de solape del cliente, RLS con políticas comentadas, RPCs (`book_appointment`, `cancel_appointment`, `reschedule_appointment`, `get_busy_ranges`, `ensure_profile`), triggers y Broadcast de Realtime.
+  - Seed dividido: `01_catalog.sql` (también remoto) y `02_demo_data.sql` (solo local): 33 citas (26 `booked`, 7 `cancelled`) con los UUID estables.
+  - pgTAP: 24 tests en verde (`supabase db reset && supabase test db`).
+  - Tipos generados (`database.generated.ts`, script `db:types`) y `getSupabaseClient()` tipado con el schema `agendo`.
+  - Verificado por API: `signInWithOtp` a `client@agendo.dev` llega a Mailpit con código de 6 dígitos, `verify` devuelve sesión, Casey ve solo sus 5 citas y `anon` no puede ejecutar `book_appointment`.
+- **PR:** ver historial de `main` (squash de `feat/fase-04-backend-local`).
+- **Decisiones:** ver tabla.
+- **Pendientes:** la fase 05 debe replicar en TypeScript el algoritmo del seed (ver decisión sobre el orden de generación).
 
 ### Fase 03 · Dominio — 2026-09-28
 - **Hecho:**
@@ -111,6 +123,11 @@ _Entradas anteriores: ninguna._
 | 2026-09-25 | Plan | Los días de calendario se representan como `LocalDate` (`'YYYY-MM-DD'` en la zona del negocio). | Evita errores de zona horaria del dispositivo. |
 | 2026-09-25 | 01 | La plantilla actual de `create-expo-app` (SDK 57) coloca el router en `src/app/` (no en `app/` raíz). Se mantiene esa convención (Expo Router la soporta de forma nativa) en vez de moverlo a `app/` raíz como sugería el archivo de fase. | Es la estructura oficial vigente de `create-expo-app`; moverla sería pelear contra la CLI sin beneficio real. |
 | 2026-09-25 | 01 | `react-native-url-polyfill` sí sigue siendo necesario con `@supabase/supabase-js` 2.117.2 (confirmado en `SupabaseClient.ts` del paquete instalado). | La guía de fase pedía verificarlo antes de instalar. |
+| 2026-09-28 | 04 | Las políticas de `agendo_availability_broadcast_read` y `agendo_agenda_broadcast_read` tocan `realtime.messages` (fuera del schema `agendo`), con nombres prefijados `agendo_` y limitadas a topics `agendo:*`. | Realtime Broadcast con canales privados; exigido por la convención del proyecto compartido. |
+| 2026-09-28 | 04 | `realtime.send(payload, event, topic, private)` funciona con la firma indicada en la CLI 2.118.0; sin cambios. `project_id` local = `agendo` (minúsculas). | Verificado: los triggers generan 2 mensajes por cita. |
+| 2026-09-28 | 04 | Orden de generación del seed (rotación de clientes y "1 de cada 4 cancelada"): días ascendentes; hoy = Marco 10:00, Marco 15:00, Lena 11:00, Lena 16:30, Sam 12:00; otros días = Marco 10:00, Lena 15:00. La rotación de clientes cuenta todas las citas ficticias; la cancelación cuenta solo las de días ≠ hoy. | El archivo de fase no fijaba si el contador de cancelación era global; así queda determinista para replicarlo en la fase 05. |
+| 2026-09-28 | 04 | `supabase/tests/agendo.test.sql` tiene 24 tests (mínimo pedido: 18). Borra las citas del seed dentro de su transacción y usa una función auxiliar en `public` (se revierte) porque `pg_temp` no es accesible desde el rol `authenticated`. | Tests deterministas e independientes de la hora de ejecución. |
+| 2026-09-28 | 04 | `supabase/templates` se excluye de Prettier. | El HTML de la plantilla de email debe quedar tal cual. |
 | 2026-09-28 | 03 | Se añaden a las interfaces `CatalogRepository.getService`/`getProfessional` (las pantallas reciben IDs por ruta), el callback `onStatus` en las suscripciones ("Live updates paused") y `AgendaRepository.listForDay(date: LocalDate)` en vez de `Date`. `LiveStatus` y `Unsubscribe` viven en `booking/domain/types.ts` y `auth`/`agenda` lo importan. | La definición §6.4 no los incluía; `LocalDate` sigue la decisión de días de calendario. |
 | 2026-09-28 | 02 | RNTL 14: `render` y `fireEvent` son asíncronos (`await`). Se añade `jest.setup.js` con el mock oficial de AsyncStorage y `"node"` a `types` de tsconfig (el test de tokens lee `global.css`). | Requisitos de las versiones instaladas; el test de tokens garantiza que hex y CSS no divergen. |
 | 2026-09-25 | 01 | `docs/` se excluye de Prettier (`.prettierignore`). | Un `npm run format` inicial reformateaba las tablas Markdown de los documentos de planificación sin necesidad; esos documentos no son código y no deben depender del formateador de JS/TS. |
