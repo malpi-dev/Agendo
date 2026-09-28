@@ -5,10 +5,10 @@
 
 ## Avance
 
-`█░░░░░░░░░░░░` 1/13 fases terminadas (8 %)
+`█▒░░░░░░░░░░░` 1/13 fases terminadas (8 %)
 
-**Fase actual:** — (siguiente: Fase 02 · Core)
-**Última actualización:** 2026-09-25
+**Fase actual:** Fase 02 · Core (🚧, falta verificación visual)
+**Última actualización:** 2026-09-28
 **Ventana planificada:** semana 1 (28 sep – 4 oct 2026); pulido y release antes del 11 oct.
 
 ## Estado por fase
@@ -16,7 +16,7 @@
 | # | Fase | Rama | Estado | Inicio | Fin |
 |---|---|---|---|---|---|
 | 01 | Andamiaje | `feat/fase-01-andamiaje` | ✅ Terminada | 2026-09-25 | 2026-09-25 |
-| 02 | Core | `feat/fase-02-core` | ⏳ Pendiente | — | — |
+| 02 | Core | `feat/fase-02-core` | 🚧 En progreso | 2026-09-28 | — |
 | 03 | Dominio | `feat/fase-03-dominio` | ⏳ Pendiente | — | — |
 | 04 | Backend local | `feat/fase-04-backend-local` | ⏳ Pendiente | — | — |
 | 05 | Modo demo | `feat/fase-05-modo-demo` | ⏳ Pendiente | — | — |
@@ -89,6 +89,7 @@ _Entradas anteriores: ninguna._
 | 2026-09-25 | Plan | Los días de calendario se representan como `LocalDate` (`'YYYY-MM-DD'` en la zona del negocio). | Evita errores de zona horaria del dispositivo. |
 | 2026-09-25 | 01 | La plantilla actual de `create-expo-app` (SDK 57) coloca el router en `src/app/` (no en `app/` raíz). Se mantiene esa convención (Expo Router la soporta de forma nativa) en vez de moverlo a `app/` raíz como sugería el archivo de fase. | Es la estructura oficial vigente de `create-expo-app`; moverla sería pelear contra la CLI sin beneficio real. |
 | 2026-09-25 | 01 | `react-native-url-polyfill` sí sigue siendo necesario con `@supabase/supabase-js` 2.117.2 (confirmado en `SupabaseClient.ts` del paquete instalado). | La guía de fase pedía verificarlo antes de instalar. |
+| 2026-09-28 | 02 | RNTL 14: `render` y `fireEvent` son asíncronos (`await`). Se añade `jest.setup.js` con el mock oficial de AsyncStorage y `"node"` a `types` de tsconfig (el test de tokens lee `global.css`). | Requisitos de las versiones instaladas; el test de tokens garantiza que hex y CSS no divergen. |
 | 2026-09-25 | 01 | `docs/` se excluye de Prettier (`.prettierignore`). | Un `npm run format` inicial reformateaba las tablas Markdown de los documentos de planificación sin necesidad; esos documentos no son código y no deben depender del formateador de JS/TS. |
 | 2026-09-25 | 01 | `tsconfig.json` añade `"types": ["jest"]` y `nativewind-env.d.ts` añade `declare module '*.css';`. | Sin ellos `tsc --noEmit` fallaba: los globals de Jest no se resolvían solos y TypeScript no sabe tipar el import de `global.css` mediante el alias `@/`. |
 
