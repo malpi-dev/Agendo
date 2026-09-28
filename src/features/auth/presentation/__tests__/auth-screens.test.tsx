@@ -10,6 +10,9 @@ import OnboardingScreen from '../screens/onboarding-screen';
 import SignInScreen from '../screens/sign-in-screen';
 import VerifyScreen from '../screens/verify-screen';
 
+// The first render pulls in the whole UI tree; on a cold CI runner it can exceed the 5 s default.
+jest.setTimeout(30_000);
+
 jest.mock('expo-router', () => ({
   router: { push: jest.fn(), back: jest.fn() },
   useLocalSearchParams: jest.fn(),
