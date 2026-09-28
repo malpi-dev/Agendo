@@ -5,9 +5,9 @@
 
 ## Avance
 
-`████▒░░░░░░░░` 4/13 fases terminadas (31 %)
+`█████░░░░░░░░` 5/13 fases terminadas (38 %)
 
-**Fase actual:** Fase 05 · Modo demo (🚧, falta verificación manual en Android)
+**Fase actual:** — (siguiente: Fase 06 · Reserva)
 **Última actualización:** 2026-09-28
 **Ventana planificada:** semana 1 (28 sep – 4 oct 2026); pulido y release antes del 11 oct.
 
@@ -19,7 +19,7 @@
 | 02 | Core | `feat/fase-02-core` | ✅ Terminada | 2026-09-28 | 2026-09-28 |
 | 03 | Dominio | `feat/fase-03-dominio` | ✅ Terminada | 2026-09-28 | 2026-09-28 |
 | 04 | Backend local | `feat/fase-04-backend-local` | ✅ Terminada | 2026-09-28 | 2026-09-28 |
-| 05 | Modo demo | `feat/fase-05-modo-demo` | 🚧 En progreso | 2026-09-28 | — |
+| 05 | Modo demo | `feat/fase-05-modo-demo` | ✅ Terminada | 2026-09-28 | 2026-09-28 |
 | 06 | Reserva | `feat/fase-06-reserva` | ⏳ Pendiente | — | — |
 | 07 | Auth | `feat/fase-07-auth` | ⏳ Pendiente | — | — |
 | 08 | Mis citas | `feat/fase-08-mis-citas` | ⏳ Pendiente | — | — |
@@ -56,6 +56,18 @@ Estados: ⏳ Pendiente · 🚧 En progreso · ✅ Terminada · ⛔ Bloqueada
 > - **PR:** enlace o número.
 > - **Decisiones:** qué se decidió y por qué (también va a la tabla de abajo si cambia la definición).
 > - **Pendientes:** lo que quedó para otra fase (con el número de fase destino).
+
+### Fase 05 · Modo demo — 2026-09-28
+- **Hecho:**
+  - Fixtures idénticos al seed (verificado contra la BD), `MockDb` con reloj inyectable, latencia y eventos.
+  - 4 repositorios mock (catalog, booking, appointments, agenda) con las mismas reglas y `DomainError` que la BD; simulación de reserva concurrente a los 5 s.
+  - `RepositoryProvider`/`useRepositories`, `useSessionStore` (`enterDemo`/`setDemoRole`/`exitDemo`, limpian la caché) y `useCurrentUser`.
+  - Rutas con `Stack.Protected` (`(auth)` / `(app)`), tabs con iconos, badge "Demo", Agenda oculta y protegida para clientes.
+  - Pantallas: Sign in + selector de rol, Home (lista servicios), Appointments/Agenda provisionales, Settings mínimo. 154 tests en verde.
+  - Verificado en Android (Expo Go): Explore demo → Client/Admin → tabs, cambio de rol y salida del demo.
+- **PR:** ver historial de `main` (squash de `feat/fase-05-modo-demo`).
+- **Decisiones:** ver tabla (iconos, comparación con el seed, simulación concurrente).
+- **Pendientes:** repos `supabase-*`, auth y perfil (fase 07); reemplazo de pantallas provisionales (fases 06, 08, 09, 11).
 
 ### Fase 04 · Backend local — 2026-09-28
 - **Hecho:**
