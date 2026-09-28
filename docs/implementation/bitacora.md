@@ -5,9 +5,9 @@
 
 ## Avance
 
-`█████▒░░░░░░░` 5/13 fases terminadas (38 %)
+`██████▒░░░░░░` 6/13 fases terminadas (46 %)
 
-**Fase actual:** Fase 06 · Reserva (🚧, falta verificación manual en Android)
+**Fase actual:** Fase 07 · Auth (⏳, por empezar)
 **Última actualización:** 2026-09-28
 **Ventana planificada:** semana 1 (28 sep – 4 oct 2026); pulido y release antes del 11 oct.
 
@@ -20,7 +20,7 @@
 | 03 | Dominio | `feat/fase-03-dominio` | ✅ Terminada | 2026-09-28 | 2026-09-28 |
 | 04 | Backend local | `feat/fase-04-backend-local` | ✅ Terminada | 2026-09-28 | 2026-09-28 |
 | 05 | Modo demo | `feat/fase-05-modo-demo` | ✅ Terminada | 2026-09-28 | 2026-09-28 |
-| 06 | Reserva | `feat/fase-06-reserva` | 🚧 En progreso | 2026-09-28 | — |
+| 06 | Reserva | `feat/fase-06-reserva` | ✅ Terminada | 2026-09-28 | 2026-09-28 |
 | 07 | Auth | `feat/fase-07-auth` | ⏳ Pendiente | — | — |
 | 08 | Mis citas | `feat/fase-08-mis-citas` | ⏳ Pendiente | — | — |
 | 09 | Realtime y agenda | `feat/fase-09-realtime-y-agenda` | ⏳ Pendiente | — | — |
@@ -56,6 +56,17 @@ Estados: ⏳ Pendiente · 🚧 En progreso · ✅ Terminada · ⛔ Bloqueada
 > - **PR:** enlace o número.
 > - **Decisiones:** qué se decidió y por qué (también va a la tabla de abajo si cambia la definición).
 > - **Pendientes:** lo que quedó para otra fase (con el número de fase destino).
+
+### Fase 06 · Reserva — 2026-09-28
+- **Hecho:**
+  - `queryKeys` centralizadas y hooks de datos (catálogo, horarios, ocupados, `useAvailableSlots` derivado, suscripción de disponibilidad, `useBookAppointment`, `useAppointment`, `useNow`).
+  - Componentes: `ServiceCard`, `Avatar`, `ProfessionalRow`, `DayStrip`, `SlotChip`, `SlotGrid` (salida animada), `LiveIndicator`, `BookingSummary`.
+  - Pantallas: Services, Choose professional, Choose slot, Confirm booking (conflicto `slotUnavailable` -> vuelve a la lista refrescada) y detalle básico de cita, con estados de carga, vacío y error.
+  - `renderWithProviders` y tests de hooks y vistas. 174 tests en verde; lint y typecheck sin errores ni warnings.
+  - Verificación manual en Android (Paso 7): pendiente de que el autor la haga en el emulador; la lógica está cubierta por tests.
+- **PR:** #6 (squash de `feat/fase-06-reserva`).
+- **Decisiones:** ver tabla (resolver de eslint, mock de Reanimated, `useNow`, tono `warning`).
+- **Pendientes:** verificación manual en Android (autor); cancelar/reprogramar en el detalle (fase 08); Realtime real (fase 09).
 
 ### Fase 05 · Modo demo — 2026-09-28
 - **Hecho:**
