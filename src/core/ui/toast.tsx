@@ -8,6 +8,7 @@ import { useToastStore, type ToastTone } from './toast-store';
 const CONTAINER: Record<ToastTone, string> = {
   info: 'bg-text',
   success: 'bg-success',
+  warning: 'bg-warning',
   danger: 'bg-danger',
 };
 

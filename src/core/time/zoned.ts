@@ -50,6 +50,12 @@ export function localTimeToMinutes(time: LocalTime): number {
   return (h ?? 0) * 60 + (min ?? 0);
 }
 
+/** 'HH:MM' (24 h) of an instant in the given timezone. */
+export function toLocalTime(instant: Date, timeZone: string): LocalTime {
+  const z = new TZDate(instant.getTime(), timeZone);
+  return `${pad(z.getHours())}:${pad(z.getMinutes())}`;
+}
+
 export function formatTime(instant: Date, timeZone: string): string {
   const z = new TZDate(instant.getTime(), timeZone);
   const h = z.getHours();

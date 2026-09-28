@@ -7,6 +7,7 @@ import {
   formatTime,
   localTimeToMinutes,
   toLocalDate,
+  toLocalTime,
   weekdayOf,
   zonedInstant,
 } from '../zoned';
@@ -42,6 +43,10 @@ describe('zoned', () => {
   it('formatTime', () => {
     expect(formatTime(new Date('2026-10-01T16:30:00Z'), 'America/Mexico_City')).toBe('10:30 AM');
     expect(formatTime(new Date('2026-10-01T18:00:00Z'), 'America/Mexico_City')).toBe('12:00 PM');
+  });
+
+  it('toLocalTime returns 24 h business time', () => {
+    expect(toLocalTime(new Date('2026-10-01T21:05:00Z'), 'America/Mexico_City')).toBe('15:05');
   });
 
   it('formatLongDate', () => {
