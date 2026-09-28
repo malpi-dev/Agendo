@@ -5,9 +5,9 @@
 
 ## Avance
 
-`█▒░░░░░░░░░░░` 1/13 fases terminadas (8 %)
+`██░░░░░░░░░░░` 2/13 fases terminadas (15 %)
 
-**Fase actual:** Fase 02 · Core (🚧, falta verificación visual)
+**Fase actual:** — (siguiente: Fase 03 · Dominio)
 **Última actualización:** 2026-09-28
 **Ventana planificada:** semana 1 (28 sep – 4 oct 2026); pulido y release antes del 11 oct.
 
@@ -16,7 +16,7 @@
 | # | Fase | Rama | Estado | Inicio | Fin |
 |---|---|---|---|---|---|
 | 01 | Andamiaje | `feat/fase-01-andamiaje` | ✅ Terminada | 2026-09-25 | 2026-09-25 |
-| 02 | Core | `feat/fase-02-core` | 🚧 En progreso | 2026-09-28 | — |
+| 02 | Core | `feat/fase-02-core` | ✅ Terminada | 2026-09-28 | 2026-09-28 |
 | 03 | Dominio | `feat/fase-03-dominio` | ⏳ Pendiente | — | — |
 | 04 | Backend local | `feat/fase-04-backend-local` | ⏳ Pendiente | — | — |
 | 05 | Modo demo | `feat/fase-05-modo-demo` | ⏳ Pendiente | — | — |
@@ -56,6 +56,18 @@ Estados: ⏳ Pendiente · 🚧 En progreso · ✅ Terminada · ⛔ Bloqueada
 > - **PR:** enlace o número.
 > - **Decisiones:** qué se decidió y por qué (también va a la tabla de abajo si cambia la definición).
 > - **Pendientes:** lo que quedó para otra fase (con el número de fase destino).
+
+### Fase 02 · Core — 2026-09-28
+- **Hecho:**
+  - Errores de dominio (`DomainError`, `mapSupabaseError`, `getErrorPresentation`) con tests por cada fila de la tabla.
+  - `core/time/zoned.ts` + `formatPrice` con tests (TZ=UTC).
+  - Tema `system | light | dark` persistido, tokens hex verificados contra `global.css`, `ThemeGate`.
+  - Componentes UI base (`AppText`, `Screen`, `Button`, `Card`, `Skeleton`, `EmptyState`, `ErrorState`, `Badge`, `Toast`) con tests de `Button` y `ErrorState`.
+  - Cliente Supabase (schema `agendo`), `QueryClient` con reintentos solo `network`/`unknown`, NetInfo y focus manager.
+  - Layout raíz con Manrope y splash retenido; kitchen sink temporal en `src/app/index.tsx`, revisado en claro y oscuro (necesitó `--clear` por caché de Metro).
+- **PR:** ver historial de `main` (squash de `feat/fase-02-core`).
+- **Decisiones:** ver tabla (RNTL 14 asíncrono, `jest.setup.js`, `node` en tsconfig types).
+- **Pendientes:** manejo global de `unauthorized` en Query (fase 07); tipar el cliente con los tipos de BD (fase 04).
 
 ### Fase 01 · Andamiaje — 2026-09-25
 - **Hecho:**
