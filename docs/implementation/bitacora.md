@@ -5,9 +5,9 @@
 
 ## Avance
 
-`█████░░░░░░░░` 5/13 fases terminadas (38 %)
+`█████▒░░░░░░░` 5/13 fases terminadas (38 %)
 
-**Fase actual:** — (siguiente: Fase 06 · Reserva)
+**Fase actual:** Fase 06 · Reserva (🚧, falta verificación manual en Android)
 **Última actualización:** 2026-09-28
 **Ventana planificada:** semana 1 (28 sep – 4 oct 2026); pulido y release antes del 11 oct.
 
@@ -20,7 +20,7 @@
 | 03 | Dominio | `feat/fase-03-dominio` | ✅ Terminada | 2026-09-28 | 2026-09-28 |
 | 04 | Backend local | `feat/fase-04-backend-local` | ✅ Terminada | 2026-09-28 | 2026-09-28 |
 | 05 | Modo demo | `feat/fase-05-modo-demo` | ✅ Terminada | 2026-09-28 | 2026-09-28 |
-| 06 | Reserva | `feat/fase-06-reserva` | ⏳ Pendiente | — | — |
+| 06 | Reserva | `feat/fase-06-reserva` | 🚧 En progreso | 2026-09-28 | — |
 | 07 | Auth | `feat/fase-07-auth` | ⏳ Pendiente | — | — |
 | 08 | Mis citas | `feat/fase-08-mis-citas` | ⏳ Pendiente | — | — |
 | 09 | Realtime y agenda | `feat/fase-09-realtime-y-agenda` | ⏳ Pendiente | — | — |
@@ -135,6 +135,10 @@ _Entradas anteriores: ninguna._
 | 2026-09-25 | Plan | Los días de calendario se representan como `LocalDate` (`'YYYY-MM-DD'` en la zona del negocio). | Evita errores de zona horaria del dispositivo. |
 | 2026-09-25 | 01 | La plantilla actual de `create-expo-app` (SDK 57) coloca el router en `src/app/` (no en `app/` raíz). Se mantiene esa convención (Expo Router la soporta de forma nativa) en vez de moverlo a `app/` raíz como sugería el archivo de fase. | Es la estructura oficial vigente de `create-expo-app`; moverla sería pelear contra la CLI sin beneficio real. |
 | 2026-09-25 | 01 | `react-native-url-polyfill` sí sigue siendo necesario con `@supabase/supabase-js` 2.117.2 (confirmado en `SupabaseClient.ts` del paquete instalado). | La guía de fase pedía verificarlo antes de instalar. |
+| 2026-09-28 | 06 | `eslint.config.js` fija el resolver de TypeScript (`import/resolver: typescript`) para el alias `@/`. | `expo lint` fallaba con `import/no-unresolved` en rutas nuevas aunque `eslint` directo y `tsc` las resolvían. |
+| 2026-09-28 | 06 | Reanimated se mockea a mano en `jest.setup.js` (View + animaciones no-op) y `gcTime: Infinity` también en mutaciones del `QueryClient` de test. | Reanimated 4/Worklets no inicializa bajo Jest (incluso con su mock oficial); el GC de mutaciones dejaba el proceso de Jest sin salir. |
+| 2026-09-28 | 06 | `useNow` vive en `core/time/use-now.ts` y no se exporta desde `core/time/index.ts`. Se añadió `toLocalTime` a `zoned.ts`. | Mantener React fuera de lo que importa `domain/`; los ids de chips usan la hora 24 h del negocio. |
+| 2026-09-28 | 06 | Tono `warning` añadido al Toast. | El conflicto "That time was just taken" usa toast de advertencia. |
 | 2026-09-28 | 05 | Se instala `@expo/vector-icons` (15.1.1) con `expo install` para los iconos de las tabs (Ionicons). | No venía en la plantilla SDK 57 y la fase pide Ionicons. |
 | 2026-09-28 | 05 | Los fixtures de `buildDemoAppointments` se compararon contra el seed real de la BD (33 citas): idénticos en profesional, servicio, cliente, hora y estado. | Garantiza que demo y remoto muestren lo mismo. |
 | 2026-09-28 | 05 | La simulación de reserva concurrente marca `concurrentBookingSimulated` cuando se dispara (no al suscribirse) y solo si la última consulta de ocupados es de ese profesional. | Así, salir de la pantalla antes de 5 s no gasta la demostración. |
