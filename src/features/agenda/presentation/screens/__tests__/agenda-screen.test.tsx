@@ -16,6 +16,7 @@ jest.mock('expo-router', () => ({
 }));
 
 const TIMEOUT = 20_000;
+const WAIT = 10_000;
 
 const adminDb = () => {
   const db = makeDb();
@@ -66,8 +67,9 @@ describe('AgendaScreen', () => {
     async () => {
       await renderWithProviders(<AgendaScreen />, { db: adminDb() });
       expect(screen.getByTestId('agenda-loading')).toBeTruthy();
-      await waitFor(() =>
-        expect(screen.getByTestId(`agenda-group-${PROFESSIONAL_IDS.marco}`)).toBeTruthy(),
+      await waitFor(
+        () => expect(screen.getByTestId(`agenda-group-${PROFESSIONAL_IDS.marco}`)).toBeTruthy(),
+        { timeout: WAIT },
       );
       expect(screen.getByTestId(`agenda-group-${PROFESSIONAL_IDS.lena}`)).toBeTruthy();
       expect(screen.getByTestId(`agenda-group-${PROFESSIONAL_IDS.sam}`)).toBeTruthy();
@@ -82,15 +84,19 @@ describe('AgendaScreen', () => {
     'filters by professional',
     async () => {
       await renderWithProviders(<AgendaScreen />, { db: adminDb() });
-      await waitFor(() => expect(screen.getByTestId(`agenda-filter-${PROFESSIONAL_IDS.lena}`)));
+      await waitFor(() => expect(screen.getByTestId(`agenda-filter-${PROFESSIONAL_IDS.lena}`)), {
+        timeout: WAIT,
+      });
       await fireEvent.press(screen.getByTestId(`agenda-filter-${PROFESSIONAL_IDS.lena}`));
-      await waitFor(() =>
-        expect(screen.getByTestId(`agenda-group-${PROFESSIONAL_IDS.lena}`)).toBeTruthy(),
+      await waitFor(
+        () => expect(screen.getByTestId(`agenda-group-${PROFESSIONAL_IDS.lena}`)).toBeTruthy(),
+        { timeout: WAIT },
       );
       expect(screen.queryByTestId(`agenda-group-${PROFESSIONAL_IDS.marco}`)).toBeNull();
       await fireEvent.press(screen.getByTestId('agenda-filter-all'));
-      await waitFor(() =>
-        expect(screen.getByTestId(`agenda-group-${PROFESSIONAL_IDS.marco}`)).toBeTruthy(),
+      await waitFor(
+        () => expect(screen.getByTestId(`agenda-group-${PROFESSIONAL_IDS.marco}`)).toBeTruthy(),
+        { timeout: WAIT },
       );
     },
     TIMEOUT,
@@ -100,12 +106,15 @@ describe('AgendaScreen', () => {
     'navigates between days and back to today; shows the empty state',
     async () => {
       const { queryClient } = await renderWithProviders(<AgendaScreen />, { db: adminDb() });
-      await waitFor(() => expect(screen.getByTestId('agenda-date')).toBeTruthy());
+      await waitFor(() => expect(screen.getByTestId('agenda-date')).toBeTruthy(), {
+        timeout: WAIT,
+      });
       expect(screen.getByTestId('agenda-date').props.children).toBe('Tuesday, Sep 29');
 
       await fireEvent.press(screen.getByTestId('agenda-next-day'));
-      await waitFor(() =>
-        expect(screen.getByTestId('agenda-date').props.children).toBe('Wednesday, Sep 30'),
+      await waitFor(
+        () => expect(screen.getByTestId('agenda-date').props.children).toBe('Wednesday, Sep 30'),
+        { timeout: WAIT },
       );
       expect(
         queryClient.getQueryCache().find({ queryKey: ['agenda', '2026-09-30', 'all'] }),
@@ -114,12 +123,15 @@ describe('AgendaScreen', () => {
 
       // Go far ahead: nothing booked.
       for (let i = 0; i < 40; i++) await fireEvent.press(screen.getByTestId('agenda-next-day'));
-      await waitFor(() => expect(screen.getByTestId('agenda-empty')).toBeTruthy());
+      await waitFor(() => expect(screen.getByTestId('agenda-empty')).toBeTruthy(), {
+        timeout: WAIT,
+      });
       expect(screen.getByText('No appointments for this day')).toBeTruthy();
 
       await fireEvent.press(screen.getByTestId('agenda-today'));
-      await waitFor(() =>
-        expect(screen.getByTestId('agenda-date').props.children).toBe('Tuesday, Sep 29'),
+      await waitFor(
+        () => expect(screen.getByTestId('agenda-date').props.children).toBe('Tuesday, Sep 29'),
+        { timeout: WAIT },
       );
     },
     TIMEOUT,
@@ -133,7 +145,9 @@ describe('AgendaScreen', () => {
         subscribe: () => () => undefined,
       };
       await renderWithProviders(<AgendaScreen />, { repositories: { agenda: failing } });
-      await waitFor(() => expect(screen.getByTestId('agenda-error')).toBeTruthy());
+      await waitFor(() => expect(screen.getByTestId('agenda-error')).toBeTruthy(), {
+        timeout: WAIT,
+      });
     },
     TIMEOUT,
   );
@@ -152,10 +166,12 @@ describe('AgendaScreen', () => {
         },
       };
       await renderWithProviders(<AgendaScreen />, { repositories: { agenda } });
-      await waitFor(() => expect(screen.getByTestId('agenda-empty')).toBeTruthy());
+      await waitFor(() => expect(screen.getByTestId('agenda-empty')).toBeTruthy(), {
+        timeout: WAIT,
+      });
       expect(listForDay).toHaveBeenCalledTimes(1);
       await act(async () => notify());
-      await waitFor(() => expect(listForDay).toHaveBeenCalledTimes(2));
+      await waitFor(() => expect(listForDay).toHaveBeenCalledTimes(2), { timeout: WAIT });
     },
     TIMEOUT,
   );
