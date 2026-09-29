@@ -20,6 +20,8 @@ export interface GetAvailableSlotsInput {
   /** Working hours of ONE professional. */
   workingHours: WorkingHours[];
   busyRanges: BusyRange[];
+  /** While rescheduling: the appointment's own range, which must not block itself. */
+  ignoreRange?: BusyRange | undefined;
   business: Business;
   now: Date;
 }
@@ -30,6 +32,7 @@ export function getAvailableSlots({
   service,
   workingHours,
   busyRanges,
+  ignoreRange,
   business,
   now,
 }: GetAvailableSlotsInput): Slot[] {
@@ -45,6 +48,13 @@ export function getAvailableSlots({
   const earliest = now.getTime() + business.minNoticeMinutes * MINUTE_MS;
   const durationMs = service.durationMinutes * MINUTE_MS;
   const stepMs = business.slotIntervalMinutes * MINUTE_MS;
+  const blocking = ignoreRange
+    ? busyRanges.filter(
+        (r) =>
+          r.start.getTime() !== ignoreRange.start.getTime() ||
+          r.end.getTime() !== ignoreRange.end.getTime(),
+      )
+    : busyRanges;
   const slots: Slot[] = [];
 
   for (const block of blocks) {
@@ -54,7 +64,7 @@ export function getAvailableSlots({
     for (let t = blockStart; t + durationMs <= blockEnd; t += stepMs) {
       if (t < earliest) continue;
       const candidate: Slot = { start: new Date(t), end: new Date(t + durationMs) };
-      if (busyRanges.some((busy) => rangesOverlap(candidate, busy))) continue;
+      if (blocking.some((busy) => rangesOverlap(candidate, busy))) continue;
       slots.push(candidate);
     }
   }
