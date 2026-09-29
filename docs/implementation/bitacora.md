@@ -7,7 +7,7 @@
 
 `████████████░` 12/13 fases terminadas (92 %)
 
-**Fase actual:** Fase 13 · Lanzamiento (⏳, por empezar)
+**Fase actual:** Fase 13 · Lanzamiento (🚧 preparada, pasos remotos pendientes; ver `docs/runbook-lanzamiento.md`)
 **Última actualización:** 2026-09-29
 **Ventana planificada:** semana 1 (28 sep – 4 oct 2026); pulido y release antes del 11 oct.
 
@@ -27,7 +27,7 @@
 | 10 | Notificaciones | `feat/fase-10-notificaciones` | ✅ Terminada | 2026-09-29 | 2026-09-29 |
 | 11 | Ajustes y pulido | `feat/fase-11-ajustes-y-pulido` | ✅ Terminada | 2026-09-29 | 2026-09-29 |
 | 12 | E2E y CI | `feat/fase-12-e2e-y-ci` | ✅ Terminada | 2026-09-29 | 2026-09-29 |
-| 13 | Lanzamiento | `feat/fase-13-lanzamiento` | ⏳ Pendiente | — | — |
+| 13 | Lanzamiento | `feat/fase-13-lanzamiento` | 🚧 Preparada, pasos remotos pendientes | 2026-09-29 | — |
 
 Estados: ⏳ Pendiente · 🚧 En progreso · ✅ Terminada · ⛔ Bloqueada
 
@@ -56,6 +56,35 @@ Estados: ⏳ Pendiente · 🚧 En progreso · ✅ Terminada · ⛔ Bloqueada
 > - **PR:** enlace o número.
 > - **Decisiones:** qué se decidió y por qué (también va a la tabla de abajo si cambia la definición).
 > - **Pendientes:** lo que quedó para otra fase (con el número de fase destino).
+
+### Fase 13 · Lanzamiento (preparación local) — 2026-09-29
+- **Estado:** preparada, **pasos remotos pendientes**. No se creó tag, Release, secretos, ni se tocó Supabase remoto/EAS/Firebase. Proyecto NO marcado como publicado.
+- **Hecho (local y reversible):**
+  - `README.md` completo en inglés (plantilla de 10 secciones): tagline y badges, placeholders de GIF/capturas (comentarios `TODO(assets)`), Try it, Features, Tech stack, Architecture (Mermaid), Backend (tablas, políticas RLS, `EXCLUDE`, RPCs, Broadcast, cron + Edge Function), nota del proyecto compartido y de los 60 días de inactividad que desactivan workflows programados, Getting started (sin backend / Supabase local / development build), Testing, Roadmap.
+  - `LICENSE`: era la MIT de la plantilla de Expo (650 Industries); ahora MIT 2026 José Malpica.
+  - `scripts/dev-otp.mjs` + `npm run dev:otp` + `.env.scripts.example` (`.env.scripts` en `.gitignore`): código OTP sin enviar correo, solo desarrollo. **No ejecutado** (requiere secret key y remoto).
+  - `scripts/apply-remote.sh`: aplica migraciones + `01_catalog.sql` con `psql`, se detiene si el schema existe y pide confirmar. **No ejecutado.**
+  - `docs/runbook-lanzamiento.md`: runbook paso a paso de todo lo remoto (migraciones, dashboard, Vault/secretos/función/cron, secretos de GitHub, EAS, usuarios de prueba, APK, prueba de humo, tag/Release, visibilidad, tablas del portafolio) y lista de assets pendientes.
+- **Hallazgos:**
+  - El repo `malpi-dev/Agendo` ya figura como **público** en GitHub (`gh repo view`). Revisar que sea intencionado. Historial sin claves reales (las coincidencias de `service_role`/`sb_secret_` son texto de documentación y SQL).
+  - `version` sigue en `0.1.0` (`app.json`, `package.json`): se sube a `1.0.0` en la rama de release (paso 8 del runbook).
+  - `extra.eas.projectId` ausente hasta `eas init`.
+- **Verificación:** `npm run lint` (max-warnings 0), `npm run typecheck`, `npm run format:check`, `npm test -- --ci` (290 tests) en verde.
+- **Pendientes (🙋 autor):** todo el runbook (`docs/runbook-lanzamiento.md`), GIF y capturas, prueba de humo del APK, tag `v1.0.0`, actualizar tablas del portafolio.
+
+#### Definición de terminado (CLAUDE.md contenedor), auditada contra el repo
+
+| Punto | Estado | Evidencia / qué falta |
+|---|---|---|
+| Todo el alcance "Incluye" funciona en Android | 🟡 Parcial | F1-F6 implementadas y cubiertas por tests; E2E Maestro en emulador (fase 12) para reserva/cancelar y agenda admin. Falta la prueba de humo en dispositivo con backend remoto (login real, push, dos dispositivos). |
+| Modo demo funcionando sin backend | ✅ | `env.ts` cae a `mock` sin variables; flujos Maestro en demo (3 corridas verdes, fase 12). |
+| Estados de carga, vacío y error en cada pantalla | 🟡 | Auditado por código y tests (tabla fase 11); no forzados en dispositivo. |
+| Tests unitarios de dominio y repositorios + 1 flujo Maestro | ✅ | 290 tests Jest en 44 suites; pgTAP 34 tests; 2 flujos Maestro. |
+| CI en verde | ✅ | `gh run list --branch main`: últimas ejecuciones en success. |
+| Sin warnings de lint; TS/analyzer sin errores | ✅ | `lint --max-warnings 0` y `tsc --noEmit` limpios. |
+| README completo | 🟡 | Texto completo; faltan GIF y capturas reales. |
+| Doble reserva imposible / RLS en todas las tablas (definición §16) | ✅ | `EXCLUDE` + pgTAP (23P01); RLS activo y políticas comentadas en las 8 tablas. |
+| Para 🚀 Publicado: APK en Releases + GIF + repo público | ⏳ | Sin release ni APK; ver runbook. |
 
 ### Fase 12 · E2E y CI — 2026-09-29
 - **Hecho:**
@@ -288,4 +317,8 @@ _Ninguno._
 
 ## Ideas para el roadmap (fuera del MVP)
 
-_Anotar aquí; luego pasan a la sección "Roadmap" del README._
+_Ya volcadas en la sección "Roadmap / Future" del README (definición §3.3 + Maestro y pgTAP en CI)._
+
+## Migraciones aplicadas en remoto
+
+_Ninguna todavía (fase 13, paso 1 del runbook). Registrar aquí archivo + fecha al aplicarlas._

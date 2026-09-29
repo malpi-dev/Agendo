@@ -71,6 +71,7 @@
     "test": "jest",
     "test:watch": "jest --watch",
     "e2e": "maestro test .maestro/",
+    "dev:otp": "node --env-file=.env.scripts scripts/dev-otp.mjs",
     "db:types": "supabase gen types typescript --local --schema agendo > src/core/supabase/database.generated.ts"
   },
   "private": true
