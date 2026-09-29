@@ -34,11 +34,12 @@ export class SupabaseCatalogRepository implements CatalogRepository {
     return toService(row);
   }
 
-  async listProfessionals(serviceId: string): Promise<Professional[]> {
+  async listProfessionals(serviceId?: string): Promise<Professional[]> {
     const rows = await run(() =>
       this.client.from('professionals').select(PROFESSIONAL_COLUMNS).eq('is_active', true),
     );
-    return rows.map(toProfessional).filter((p) => p.serviceIds.includes(serviceId));
+    const all = rows.map(toProfessional);
+    return serviceId ? all.filter((p) => p.serviceIds.includes(serviceId)) : all;
   }
 
   async getProfessional(id: string): Promise<Professional> {

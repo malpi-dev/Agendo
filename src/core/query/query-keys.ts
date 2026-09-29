@@ -6,7 +6,7 @@ export const queryKeys = {
   business: ['business'] as const,
   services: ['services'] as const,
   service: (id: string) => ['services', id] as const,
-  professionals: (serviceId: string) => ['professionals', serviceId] as const,
+  professionals: (serviceId?: string) => ['professionals', serviceId ?? 'all'] as const,
   professional: (id: string) => ['professional', id] as const,
   workingHours: (professionalId: string) => ['workingHours', professionalId] as const,
   busy: (professionalId: string, date?: LocalDate) =>

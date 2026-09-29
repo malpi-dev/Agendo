@@ -83,6 +83,13 @@ describe('SupabaseCatalogRepository', () => {
     expect(list[0]?.serviceIds).toEqual(['s1', 's2']);
   });
 
+  it('lists all active professionals when no service is given', async () => {
+    const { fake, repo } = setup();
+    fake.respond({ data: [professionalRow('p1', ['s1']), professionalRow('p2', ['s2'])] });
+    const list = await repo.listProfessionals();
+    expect(list.map((p) => p.id)).toEqual(['p1', 'p2']);
+  });
+
   it('maps working hours ordered by weekday and start time', async () => {
     const { fake, repo } = setup();
     fake.respond({

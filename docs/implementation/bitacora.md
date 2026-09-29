@@ -5,9 +5,9 @@
 
 ## Avance
 
-`████████░░░░░` 8/13 fases terminadas (62 %)
+`█████████░░░░` 9/13 fases terminadas (69 %)
 
-**Fase actual:** Fase 09 · Realtime y agenda (⏳, por empezar)
+**Fase actual:** Fase 10 · Notificaciones (⏳, por empezar)
 **Última actualización:** 2026-09-28
 **Ventana planificada:** semana 1 (28 sep – 4 oct 2026); pulido y release antes del 11 oct.
 
@@ -23,7 +23,7 @@
 | 06 | Reserva | `feat/fase-06-reserva` | ✅ Terminada | 2026-09-28 | 2026-09-28 |
 | 07 | Auth | `feat/fase-07-auth` | ✅ Terminada | 2026-09-28 | 2026-09-28 |
 | 08 | Mis citas | `feat/fase-08-mis-citas` | ✅ Terminada | 2026-09-28 | 2026-09-28 |
-| 09 | Realtime y agenda | `feat/fase-09-realtime-y-agenda` | ⏳ Pendiente | — | — |
+| 09 | Realtime y agenda | `feat/fase-09-realtime-y-agenda` | ✅ Terminada | 2026-09-28 | 2026-09-28 |
 | 10 | Notificaciones | `feat/fase-10-notificaciones` | ⏳ Pendiente | — | — |
 | 11 | Ajustes y pulido | `feat/fase-11-ajustes-y-pulido` | ⏳ Pendiente | — | — |
 | 12 | E2E y CI | `feat/fase-12-e2e-y-ci` | ⏳ Pendiente | — | — |
@@ -56,6 +56,17 @@ Estados: ⏳ Pendiente · 🚧 En progreso · ✅ Terminada · ⛔ Bloqueada
 > - **PR:** enlace o número.
 > - **Decisiones:** qué se decidió y por qué (también va a la tabla de abajo si cambia la definición).
 > - **Pendientes:** lo que quedó para otra fase (con el número de fase destino).
+
+### Fase 09 · Realtime y agenda — 2026-09-28
+- **Hecho:**
+  - Prototipo del Paso 1 (script temporal fuera del repo, Supabase local): con `admin@agendo.dev` (OTP vía `generateLink`), `realtime.setAuth()` + canal privado `agendo:availability:<id de Marco>` y `agendo:agenda` reciben `appointment_changed` al cancelar/reactivar una cita por `psql`, en milisegundos (< 3 s). Sin necesidad de plan B (`busy_slots`).
+  - `core/supabase/subscribe-broadcast.ts`: helper compartido (canal privado → `setAuth` → `subscribe`; `live`/`paused`; `onChange` extra al re-suscribirse; `removeChannel` al salir, incluso si se sale antes de que resuelva `setAuth`). Usado por `SupabaseBookingRepository.subscribeToAvailability` y `SupabaseAgendaRepository.subscribe`. Verificado el helper real contra Supabase local: `live` en ~16 ms, evento recibido en el acto y 0 canales tras el unsubscribe.
+  - `listProfessionals(serviceId?)` en interfaz, mock y Supabase; `queryKeys.professionals` usa `'all'` sin id.
+  - Pestaña *Agenda* (admin): cabecera con `‹` / fecha larga / `›` / Today, `LiveIndicator`, chips de filtro por profesional, grupos por profesional con filas (rango horario, cliente, servicio), skeleton, vacío "No appointments for this day", error con Retry y pull-to-refresh; los clientes se redirigen a `/`. `useAgenda` + `useAgendaSubscription` (invalida `agenda`).
+  - Tests: helper de broadcast, suscripciones de ambos repos Supabase (con `channel`/`removeChannel`/`setAuth` añadidos a `fake-supabase`), `listProfessionals()` sin id (mock y Supabase) y pantalla de agenda (redirección, agrupación/orden, filtro, navegación de días, vacío, error, refresco por suscripción). 251 tests en verde; lint (max-warnings 0), typecheck y format sin errores.
+- **PR:** #10 (squash de `feat/fase-09-realtime-y-agenda`).
+- **Decisiones:** ver tabla (nombre del canal y helper compartido).
+- **Pendientes:** verificación manual del Paso 6 en dispositivo/emulador (dos sesiones, *Choose slot* y *Agenda* en vivo, corte de red y reconexión, sin canales huérfanos en Studio) — la hace el autor; en modo demo la agenda refleja las reservas del mismo demo (cambiar de rol en Ajustes).
 
 ### Fase 08 · Mis citas — 2026-09-28
 - **Hecho:**
@@ -172,6 +183,8 @@ _Entradas anteriores: ninguna._
 | 2026-09-25 | Plan | Los días de calendario se representan como `LocalDate` (`'YYYY-MM-DD'` en la zona del negocio). | Evita errores de zona horaria del dispositivo. |
 | 2026-09-25 | 01 | La plantilla actual de `create-expo-app` (SDK 57) coloca el router en `src/app/` (no en `app/` raíz). Se mantiene esa convención (Expo Router la soporta de forma nativa) en vez de moverlo a `app/` raíz como sugería el archivo de fase. | Es la estructura oficial vigente de `create-expo-app`; moverla sería pelear contra la CLI sin beneficio real. |
 | 2026-09-25 | 01 | `react-native-url-polyfill` sí sigue siendo necesario con `@supabase/supabase-js` 2.117.2 (confirmado en `SupabaseClient.ts` del paquete instalado). | La guía de fase pedía verificarlo antes de instalar. |
+| 2026-09-28 | 09 | El canal de disponibilidad es `agendo:availability:<professional_id>` (el que ya crean el trigger y la política de la fase 04), no `agendo:slots:<professional_id>` como sugiere el `CLAUDE.md` de la carpeta contenedora. | Cambiarlo exige modificar migraciones ya aplicadas; el patrón `agendo:<tema>:<id>` de la convención se cumple igual. Pendiente que el autor decida si actualiza el `CLAUDE.md` o renombra el canal. |
+| 2026-09-28 | 09 | La lógica de suscripción vive en un helper `subscribeToBroadcast` en `core/supabase/` en vez de duplicarse en los dos repositorios. | Ambos repos usan el mismo protocolo (canal privado + `setAuth` + re-suscripción); una sola implementación y un solo test. |
 | 2026-09-28 | 08 | `jest.setup.js` mockea `@shopify/flash-list` con `src/test/flash-list-mock.tsx` (renderiza todas las filas) en vez de usar `@shopify/flash-list/jestSetup`. | El `jestSetup` incluido en 2.0.2 referencia `RecyclerView`, que el paquete ya no exporta, y rompe el render. |
 | 2026-09-28 | 07 | `run()` infiere el tipo de `data` de la rama con `error: null` de la respuesta de supabase-js (no `{ data: T }` genérico); `signOut` se envuelve porque no devuelve `data`. | La firma del archivo de fase no compilaba con las uniones de `getSession`/`verifyOtp` ni con las listas `T[] \| null`. |
 | 2026-09-28 | 07 | El onboarding guarda el perfil devuelto por `ensure_profile` con `setQueryData(['profile','mine'])` en vez de invalidar. | Evita un refetch y el guard pasa a `(app)` de inmediato. |

@@ -5,6 +5,18 @@ interface Result {
   error: unknown;
 }
 
+export interface FakeChannel {
+  topic: string;
+  options: unknown;
+  /** Broadcast listeners registered with `channel.on('broadcast', { event }, cb)`. */
+  listeners: { event: string; callback: () => void }[];
+  subscribe: jest.Mock;
+  /** Simulates a broadcast message. */
+  emit: (event: string) => void;
+  /** Simulates the channel status callback given to `subscribe`. */
+  status: (status: string) => void;
+}
+
 export interface FakeSupabase {
   client: AgendoSupabaseClient;
   /** Every chained call on a query builder, in order: ['from', 'appointments'], ['eq', 'id', '1']… */
@@ -15,6 +27,10 @@ export interface FakeSupabase {
    */
   respond: (...results: (Partial<Result> | Error)[]) => void;
   rpc: jest.Mock;
+  /** Realtime: channels created with `client.channel()`, in order. */
+  channels: FakeChannel[];
+  removeChannel: jest.Mock;
+  setAuth: jest.Mock;
   auth: {
     signInWithOtp: jest.Mock;
     verifyOtp: jest.Mock;
@@ -69,7 +85,37 @@ export function createFakeSupabase(): FakeSupabase {
     onAuthStateChange: jest.fn(),
   };
 
+  const channels: FakeChannel[] = [];
+  const removeChannel = jest.fn(() => Promise.resolve('ok'));
+  const setAuth = jest.fn(() => Promise.resolve());
+  const channel = (topic: string, options?: unknown) => {
+    let statusCallback: ((status: string) => void) | undefined;
+    const fake: FakeChannel = {
+      topic,
+      options,
+      listeners: [],
+      subscribe: jest.fn((cb: (status: string) => void) => {
+        statusCallback = cb;
+        return fake;
+      }),
+      emit: (event) => fake.listeners.filter((l) => l.event === event).forEach((l) => l.callback()),
+      status: (status) => statusCallback?.(status),
+    };
+    const api = {
+      on: (_type: string, filter: { event: string }, callback: () => void) => {
+        fake.listeners.push({ event: filter.event, callback });
+        return api;
+      },
+      subscribe: fake.subscribe,
+    };
+    channels.push(fake);
+    return api;
+  };
+
   const client = {
+    channel,
+    removeChannel,
+    realtime: { setAuth },
     from: (table: string) => {
       calls.push(['from', table]);
       return builder;
@@ -85,6 +131,9 @@ export function createFakeSupabase(): FakeSupabase {
       queue = results.map((r) => (r instanceof Error ? r : { data: null, error: null, ...r }));
     },
     rpc,
+    channels,
+    removeChannel,
+    setAuth,
     auth,
   };
 }

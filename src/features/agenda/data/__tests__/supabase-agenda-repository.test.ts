@@ -61,10 +61,33 @@ describe('SupabaseAgendaRepository', () => {
     await expect(repo.listForDay('2026-09-29')).resolves.toEqual([]);
   });
 
-  it('subscribe is provisional (paused, no-op)', () => {
-    const { repo } = setup();
-    const onStatus = jest.fn();
-    repo.subscribe(jest.fn(), onStatus)();
-    expect(onStatus).toHaveBeenCalledWith('paused');
+  it('subscribes to the private agenda topic', async () => {
+    const { fake, repo } = setup();
+    const onChange = jest.fn();
+    const off = repo.subscribe(onChange);
+    await new Promise((r) => setImmediate(r));
+    expect(fake.channels[0]).toMatchObject({
+      topic: 'agendo:agenda',
+      options: { config: { private: true } },
+    });
+    fake.channels[0]!.emit('appointment_changed');
+    expect(onChange).toHaveBeenCalledTimes(1);
+    off();
+    expect(fake.removeChannel).toHaveBeenCalledTimes(1);
+  });
+
+  it('subscribes to the private agenda topic', async () => {
+    const { fake, repo } = setup();
+    const onChange = jest.fn();
+    const off = repo.subscribe(onChange);
+    await new Promise((r) => setImmediate(r));
+    expect(fake.channels[0]).toMatchObject({
+      topic: 'agendo:agenda',
+      options: { config: { private: true } },
+    });
+    fake.channels[0]!.emit('appointment_changed');
+    expect(onChange).toHaveBeenCalledTimes(1);
+    off();
+    expect(fake.removeChannel).toHaveBeenCalledTimes(1);
   });
 });

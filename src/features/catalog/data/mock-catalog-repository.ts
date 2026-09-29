@@ -35,10 +35,10 @@ export class MockCatalogRepository implements CatalogRepository {
     return { ...service };
   }
 
-  async listProfessionals(serviceId: string): Promise<Professional[]> {
+  async listProfessionals(serviceId?: string): Promise<Professional[]> {
     await this.db.delay();
     return this.db.professionals
-      .filter((p) => p.isActive && p.serviceIds.includes(serviceId))
+      .filter((p) => p.isActive && (!serviceId || p.serviceIds.includes(serviceId)))
       .map(cloneProfessional);
   }
 
