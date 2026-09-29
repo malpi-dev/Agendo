@@ -42,6 +42,7 @@ export function DemoRoleSheet({ visible, onClose }: DemoRoleSheetProps) {
       <Pressable
         className="flex-1 justify-end bg-black/50"
         onPress={onClose}
+        accessibilityRole="button"
         accessibilityLabel="Close"
       >
         <Pressable className="gap-3 rounded-t-3xl bg-surface p-6 pb-10" onPress={() => undefined}>

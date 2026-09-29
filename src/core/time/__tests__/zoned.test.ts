@@ -2,6 +2,7 @@ import {
   addDaysToLocalDate,
   compareLocalDate,
   formatDayChip,
+  formatDayLabel,
   formatLongDate,
   formatPrice,
   formatTime,
@@ -57,6 +58,10 @@ describe('zoned', () => {
 
   it('formatDayChip', () => {
     expect(formatDayChip('2026-10-06')).toEqual({ weekday: 'Tue', day: '6', month: 'Oct' });
+  });
+
+  it('formatDayLabel', () => {
+    expect(formatDayLabel('2026-10-06')).toBe('Tuesday, October 6');
   });
 
   it('compareLocalDate', () => {

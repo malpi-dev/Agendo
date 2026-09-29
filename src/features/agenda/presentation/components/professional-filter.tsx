@@ -26,7 +26,7 @@ function Chip({
       accessibilityRole="button"
       accessibilityState={{ selected }}
       onPress={onPress}
-      className={`rounded-full border px-4 py-2 active:opacity-80 ${
+      className={`min-h-11 justify-center rounded-full border px-4 py-2 active:opacity-80 ${
         selected ? 'border-primary bg-primary' : 'border-border bg-surface'
       }`}
     >

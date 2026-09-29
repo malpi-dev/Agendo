@@ -1,4 +1,3 @@
-import * as Haptics from 'expo-haptics';
 import { router } from 'expo-router';
 import { Alert, View } from 'react-native';
 
@@ -68,7 +67,6 @@ export function AppointmentDetailContent({ id }: { id: string }) {
   const confirmCancel = () =>
     cancel.mutate(a.id, {
       onSuccess: () => {
-        void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
         showToast('Appointment cancelled', 'success');
       },
       onError: (error) => {

@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { FlatList, Pressable } from 'react-native';
 
-import { formatDayChip, type LocalDate } from '@/core/time';
+import { formatDayChip, formatDayLabel, type LocalDate } from '@/core/time';
 import { AppText } from '@/core/ui';
 
 import type { BookableDay } from '../../domain/get-bookable-days';
@@ -51,6 +51,7 @@ export function DayStrip({ days, selected, onSelect }: DayStripProps) {
           <Pressable
             testID={testID}
             accessibilityRole="button"
+            accessibilityLabel={`${formatDayLabel(item.date)}${item.isDisabled ? ', unavailable' : ''}`}
             accessibilityState={{ disabled: item.isDisabled, selected: isSelected }}
             disabled={item.isDisabled}
             onPress={() => onSelect(item.date)}
