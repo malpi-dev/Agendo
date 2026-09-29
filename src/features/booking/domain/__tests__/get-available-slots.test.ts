@@ -143,4 +143,11 @@ describe('getAvailableSlots', () => {
     const [slot] = run({});
     expect(slot && slot.end.getTime() - slot.start.getTime()).toBe(30 * 60_000);
   });
+
+  it('offers the range being rescheduled as free but keeps other busy ranges', () => {
+    const own = { start: at(THURSDAY, '09:00'), end: at(THURSDAY, '09:30') };
+    const other = { start: at(THURSDAY, '09:30'), end: at(THURSDAY, '10:00') };
+    expect(starts({ busyRanges: [own, other] })).toEqual([]);
+    expect(starts({ busyRanges: [own, other], ignoreRange: own })).toEqual(['09:00']);
+  });
 });

@@ -5,9 +5,9 @@
 
 ## Avance
 
-`██████████░░░` 10/13 fases terminadas (77 %)
+`███████████░░` 11/13 fases terminadas (85 %)
 
-**Fase actual:** Fase 11 · Ajustes y pulido (⏳, por empezar)
+**Fase actual:** Fase 12 · E2E y CI (⏳, por empezar)
 **Última actualización:** 2026-09-29
 **Ventana planificada:** semana 1 (28 sep – 4 oct 2026); pulido y release antes del 11 oct.
 
@@ -25,7 +25,7 @@
 | 08 | Mis citas | `feat/fase-08-mis-citas` | ✅ Terminada | 2026-09-28 | 2026-09-28 |
 | 09 | Realtime y agenda | `feat/fase-09-realtime-y-agenda` | ✅ Terminada | 2026-09-28 | 2026-09-28 |
 | 10 | Notificaciones | `feat/fase-10-notificaciones` | ✅ Terminada | 2026-09-29 | 2026-09-29 |
-| 11 | Ajustes y pulido | `feat/fase-11-ajustes-y-pulido` | ⏳ Pendiente | — | — |
+| 11 | Ajustes y pulido | `feat/fase-11-ajustes-y-pulido` | ✅ Terminada | 2026-09-29 | 2026-09-29 |
 | 12 | E2E y CI | `feat/fase-12-e2e-y-ci` | ⏳ Pendiente | — | — |
 | 13 | Lanzamiento | `feat/fase-13-lanzamiento` | ⏳ Pendiente | — | — |
 
@@ -56,6 +56,36 @@ Estados: ⏳ Pendiente · 🚧 En progreso · ✅ Terminada · ⛔ Bloqueada
 > - **PR:** enlace o número.
 > - **Decisiones:** qué se decidió y por qué (también va a la tabla de abajo si cambia la definición).
 > - **Pendientes:** lo que quedó para otra fase (con el número de fase destino).
+
+### Fase 11 · Ajustes y pulido — 2026-09-29
+- **Hecho:**
+  - Ajustes completos (`settings/presentation/{components,screens}`): **Profile** (nombre editable con RHF + `fullNameSchema`, `save-name-button` → `profile.updateName` + invalidar `['profile','mine']`, error en línea, estado de carga y de error con Retry; email de solo lectura; en demo "Casey Morgan · demo account" sin edición), **Appearance** (control segmentado System / Light / Dark, `theme-system|light|dark`, persistido), **Reminders** (fase 10), **Demo** (`demo-switch-role` "Explore as: Client/Admin", `demo-exit`) o **Account** (`sign-out-button`), **About** (versión + "Times are shown in <negocio>'s timezone (<tz>)"). 8 tests nuevos.
+  - Identidad visual: SVG maestros en `assets/source/` (`icon`, `adaptive-foreground`, `splash-icon`, `monochrome`, `notification-icon`; calendario blanco con cabecera teal y check coral, sin texto) y PNG exportados con `sharp` (temporal, fuera del repo): `icon`, `adaptive-icon`, `monochrome-icon` (ícono temático Android 13+), `splash-icon`, `notification-icon` (96×96 blanco). `app.json`: adaptive icon con fondo `#0B4F4A`, splash `#0F766E` / `dark: #0B1215` con `imageWidth: 200`, ícono de notificación. Eliminados los recursos de plantilla de Expo (`assets/expo.icon`, `android-icon-*.png`) y `ios.icon`. `expo-doctor` 21/21.
+  - Auditoría de modo oscuro: ningún hex fuera de `tokens.ts`/`global.css`. Contraste WCAG (script temporal) — fallaban en claro `text-muted/surface-muted` (4,28), `accent` (2,75), `success` (3,30) y `warning` (3,19) como texto de Badge/LiveIndicator y `success`/`warning` como fondo de Toast. Ajustados **en `global.css` y `tokens.ts` a la vez**: `text-muted` `#6B7280`→`#5B6472`, `accent` `#F97360`→`#B4321F`, `success` `#16A34A`→`#166534`, `warning` `#D97706`→`#92400E` (el coral de marca `#F97360` sigue en el ícono). Todas las parejas ≥ 4,5:1 en claro y oscuro (texto de Badge sobre su tinte al 15 %: ≥ 4,8). El modo oscuro ya pasaba.
+  - Accesibilidad: chips de día con etiqueta "Tuesday, October 6, unavailable" (`formatDayLabel`), chips de horario con `accessibilityLabel`, áreas táctiles ≥ 44 (chips de horario y de profesional, flechas de la agenda), `Screen` con `KeyboardAvoidingView`, `returnKeyType` en email/nombre, hojas con botón de cierre etiquetado. Haptics solo al reservar/reprogramar (se quitó el de cancelar). Eliminado el kitchen sink (`core/ui/__dev__`, sin referencias).
+  - **Fallo conocido resuelto — reprogramar:** el horario actual de la propia cita aparecía ocupado en *Choose slot*. `getAvailableSlots` acepta `ignoreRange` y `useAvailableSlots({ rescheduleId })` lo rellena con la cita actual (mismo profesional); la BD ya excluía la propia fila en el `UPDATE`. Tests de dominio y de hook.
+  - **Avisos conocidos resueltos:** `act(...)` de `ConfirmBookingContent` (esperar a que se asienten mutación/refetch y vaciar las notificaciones por lotes de TanStack Query dentro de `act`), `act(...)` en `use-available-slots` y **worker de Jest que no salía limpio** (causa: el temporizador de auto-cierre del toast, 2,5 s; ahora `jest.setup-after-env.js` lo cierra tras cada test).
+  - Verificación: `npm run lint` (max-warnings 0), `npm run typecheck`, `npm run format:check` y `npm test -- --ci` (290 tests, sin avisos `act` ni "failed to exit") en verde.
+- **PR:** ver historial de `main` (squash de `feat/fase-11-ajustes-y-pulido`).
+- **Decisiones:** ver tabla (paleta clara ajustada, `ignoreRange`, temporizador del toast en Jest).
+- **Auditoría de estados (§12.1):** hecha por revisión de código y de los tests existentes; **no** se forzaron aún en dispositivo (latencia 2000 ms, `supabase stop`).
+
+  | Pantalla | Carga | Vacío | Error |
+  |---|---|---|---|
+  | Sign in / Enter code | ✅ | — | ✅ |
+  | Onboarding | ✅ | — | ✅ |
+  | Services | ✅ | ✅ | ✅ |
+  | Choose professional | ✅ | ✅ | ✅ |
+  | Choose slot | ✅ | ✅ | ✅ (+ Live updates paused) |
+  | Confirm booking | ✅ | — | ✅ |
+  | My appointments | ✅ | ✅ | ✅ |
+  | Appointment detail | ✅ | — | ✅ (`notFound`, ventana cerrada) |
+  | Agenda (admin) | ✅ | ✅ | ✅ |
+  | Settings | ✅ | — | ✅ (guardar nombre y cargar perfil; esta fase añadió el error de perfil) |
+
+- **Pendientes (🙋 autor):**
+  1. Recorrido en emulador/teléfono: claro/oscuro/sistema (barra de estado y tab bar), escala de fuente 1,3, nuevo development build para ver ícono y splash (`npx expo run:android --device`), y forzar los estados de la tabla (demo con `latencyMs [2000, 2000]`, `supabase stop` para el error de red). Revisar que el ícono sea de su agrado (SVG editables en `assets/source/`).
+  2. Fase 12: los `testID` de Ajustes (`demo-switch-role`, `demo-exit`, `sign-out-button`) se mantienen para Maestro; el botón de rol demo ahora dice "Explore as: Client/Admin".
 
 ### Fase 10 · Notificaciones — 2026-09-29
 - **Hecho:**
@@ -201,6 +231,10 @@ _Entradas anteriores: ninguna._
 | 2026-09-25 | Plan | Los días de calendario se representan como `LocalDate` (`'YYYY-MM-DD'` en la zona del negocio). | Evita errores de zona horaria del dispositivo. |
 | 2026-09-25 | 01 | La plantilla actual de `create-expo-app` (SDK 57) coloca el router en `src/app/` (no en `app/` raíz). Se mantiene esa convención (Expo Router la soporta de forma nativa) en vez de moverlo a `app/` raíz como sugería el archivo de fase. | Es la estructura oficial vigente de `create-expo-app`; moverla sería pelear contra la CLI sin beneficio real. |
 | 2026-09-25 | 01 | `react-native-url-polyfill` sí sigue siendo necesario con `@supabase/supabase-js` 2.117.2 (confirmado en `SupabaseClient.ts` del paquete instalado). | La guía de fase pedía verificarlo antes de instalar. |
+| 2026-09-29 | 11 | Paleta clara ajustada por contraste AA: `text-muted` `#5B6472`, `accent` `#B4321F`, `success` `#166534`, `warning` `#92400E` (en `global.css` y `tokens.ts`). | Los valores anteriores daban 2,75–4,28:1 como texto/fondo de Badge, LiveIndicator y Toast. El coral de marca `#F97360` se conserva en el ícono. |
+| 2026-09-29 | 11 | `getAvailableSlots` recibe `ignoreRange` (la cita que se reprograma) y `useAvailableSlots` lo obtiene con `rescheduleId`. | Corrige que el horario actual de la propia cita apareciera ocupado; la BD ya ignora la fila propia en el `UPDATE`. |
+| 2026-09-29 | 11 | `jest.setup-after-env.js` cierra el toast tras cada test. | El temporizador de 2,5 s mantenía vivo el worker de Jest ("failed to exit gracefully"). |
+| 2026-09-29 | 11 | Se eliminan `assets/expo.icon`, `android-icon-*.png` y `ios.icon`; el ícono temático Android usa `monochrome-icon.png` propio. | Eran recursos de la plantilla de Expo (marca ajena); iOS usa el `icon` general. |
 | 2026-09-29 | 10 | Se usa `Notifications.getLastNotificationResponse()` / `clearLastNotificationResponse()` (síncronos) en vez de `getLastNotificationResponseAsync`. | La versión Async está deprecada en `expo-notifications` de SDK 57. |
 | 2026-09-29 | 10 | La Edge Function lee la secret key de `SUPABASE_SECRET_KEYS.default` (con `SUPABASE_SERVICE_ROLE_KEY` de respaldo). | Es el nombre vigente en la documentación de Supabase. |
 | 2026-09-29 | 10 | `supabase/functions` se excluye de `tsc` (`tsconfig.json`) y de ESLint. | Es código Deno (imports `npm:`), no compilable con la config de React Native. |

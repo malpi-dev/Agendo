@@ -53,6 +53,8 @@ export default function OnboardingScreen() {
             autoComplete="name"
             textContentType="name"
             autoCapitalize="words"
+            returnKeyType="done"
+            onSubmitEditing={() => void handleSubmit((values) => createProfile.mutate(values))()}
             error={errors.fullName ? 'Enter your name (2 to 80 characters)' : undefined}
           />
         )}

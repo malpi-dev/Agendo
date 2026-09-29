@@ -109,6 +109,7 @@ function AgendaBody({
             testID="agenda-today"
             accessibilityRole="button"
             onPress={() => onSelectDate(today)}
+            hitSlop={8}
             className="rounded-full border border-border px-3 py-1.5 active:opacity-80"
           >
             <AppText variant="label">Today</AppText>
@@ -180,7 +181,7 @@ function DayButton({
       accessibilityLabel={label}
       onPress={onPress}
       hitSlop={8}
-      className="h-10 w-10 items-center justify-center rounded-full active:bg-surface"
+      className="h-11 w-11 items-center justify-center rounded-full active:bg-surface"
     >
       <AppText variant="title">{glyph}</AppText>
     </Pressable>

@@ -35,7 +35,12 @@ export default function ChooseSlotScreen() {
   const selectedDate = pickedDate ?? days.find((d) => !d.isDisabled)?.date ?? null;
 
   const liveStatus = useAvailabilitySubscription(professionalId);
-  const availability = useAvailableSlots({ serviceId, professionalId, date: selectedDate });
+  const availability = useAvailableSlots({
+    serviceId,
+    professionalId,
+    date: selectedDate,
+    rescheduleId,
+  });
 
   const setupError = business.error ?? workingHours.error;
   if (setupError) {

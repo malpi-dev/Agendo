@@ -9,16 +9,14 @@
     "userInterfaceStyle": "automatic",
     "ios": {
       "bundleIdentifier": "com.malpidev.agendo",
-      "supportsTablet": false,
-      "icon": "./assets/expo.icon"
+      "supportsTablet": false
     },
     "android": {
       "package": "com.malpidev.agendo",
       "adaptiveIcon": {
-        "backgroundColor": "#E6F4FE",
-        "foregroundImage": "./assets/images/android-icon-foreground.png",
-        "backgroundImage": "./assets/images/android-icon-background.png",
-        "monochromeImage": "./assets/images/android-icon-monochrome.png"
+        "foregroundImage": "./assets/images/adaptive-icon.png",
+        "monochromeImage": "./assets/images/monochrome-icon.png",
+        "backgroundColor": "#0B4F4A"
       },
       "predictiveBackGestureEnabled": false
     },
@@ -30,9 +28,12 @@
       [
         "expo-splash-screen",
         {
-          "backgroundColor": "#F7F8F6",
           "image": "./assets/images/splash-icon.png",
-          "imageWidth": 76
+          "imageWidth": 200,
+          "backgroundColor": "#0F766E",
+          "dark": {
+            "backgroundColor": "#0B1215"
+          }
         }
       ],
       "expo-font",
@@ -40,7 +41,8 @@
         "expo-notifications",
         {
           "color": "#0F766E",
-          "defaultChannel": "reminders"
+          "defaultChannel": "reminders",
+          "icon": "./assets/images/notification-icon.png"
         }
       ]
     ],

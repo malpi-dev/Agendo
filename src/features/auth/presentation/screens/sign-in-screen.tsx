@@ -70,6 +70,8 @@ export default function SignInScreen() {
                 autoCapitalize="none"
                 autoComplete="email"
                 autoCorrect={false}
+                returnKeyType="send"
+                onSubmitEditing={() => void handleSubmit((values) => sendCode.mutate(values))()}
                 error={errors.email ? 'Enter a valid email address' : undefined}
               />
             )}

@@ -4,6 +4,20 @@ export type LocalDate = string; // 'YYYY-MM-DD' in the business timezone
 export type LocalTime = string; // 'HH:MM' (also accepts 'HH:MM:SS' from Postgres)
 
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+const LONG_MONTHS = [
+  'January',
+  'February',
+  'March',
+  'April',
+  'May',
+  'June',
+  'July',
+  'August',
+  'September',
+  'October',
+  'November',
+  'December',
+];
 const WEEKDAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 const LONG_WEEKDAYS = [
   'Sunday',
@@ -70,6 +84,12 @@ export function formatLongDate(instant: Date, timeZone: string): string {
 export function formatDayChip(date: LocalDate): { weekday: string; day: string; month: string } {
   const [, m, d] = parseLocalDate(date);
   return { weekday: WEEKDAYS[weekdayOf(date)] ?? '', day: String(d), month: MONTHS[m - 1] ?? '' };
+}
+
+/** Spoken form of a calendar day, e.g. "Tuesday, October 6" (screen readers). */
+export function formatDayLabel(date: LocalDate): string {
+  const [, m, d] = parseLocalDate(date);
+  return `${LONG_WEEKDAYS[weekdayOf(date)] ?? ''}, ${LONG_MONTHS[m - 1] ?? ''} ${d}`;
 }
 
 export function compareLocalDate(a: LocalDate, b: LocalDate): number {

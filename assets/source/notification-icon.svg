@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="96" height="96" viewBox="0 0 96 96">
+  <!-- White monochrome silhouette on transparent (Android tints it). The check is cut out of the body. -->
+  <defs>
+    <mask id="cut">
+      <rect width="96" height="96" fill="#FFFFFF"/>
+      <path d="M32.500 57l10 10 20-22" fill="none" stroke="#000000" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+    </mask>
+  </defs>
+  <g fill="#FFFFFF">
+    <rect x="12" y="22" width="72" height="64" rx="12" mask="url(#cut)"/>
+    <rect x="28" y="8" width="8" height="20" rx="4"/>
+    <rect x="60" y="8" width="8" height="20" rx="4"/>
+  </g>
+</svg>

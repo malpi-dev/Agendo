@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+  <!-- Same motif scaled into the central safe zone (~66%). Background colour is set in app.json. -->
+  <g transform="translate(512 512) scale(0.9) translate(-512 -528)">
+    <rect x="192" y="232" width="640" height="592" rx="120" fill="#FFFFFF"/>
+    <path d="M192 352a120 120 0 0 1 120-120h400a120 120 0 0 1 120 120v48H192z" fill="#0F766E"/>
+    <rect x="332" y="160" width="60" height="140" rx="30" fill="#FFFFFF"/>
+    <rect x="632" y="160" width="60" height="140" rx="30" fill="#FFFFFF"/>
+    <path d="M348 620l114 114 214-236" fill="none" stroke="#F97360" stroke-width="72" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+</svg>

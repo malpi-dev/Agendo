@@ -18,18 +18,14 @@ export function SlotChip({ slot, timeZone, selected = false, onPress }: SlotChip
     <Pressable
       testID={testID}
       accessibilityRole="button"
+      accessibilityLabel={formatTime(slot.start, timeZone)}
       accessibilityState={{ selected }}
       onPress={() => onPress(slot)}
-      className={`items-center rounded-xl border py-3 active:opacity-80 ${
+      className={`min-h-11 items-center justify-center rounded-xl border py-3 active:opacity-80 ${
         selected ? 'border-primary bg-primary' : 'border-border bg-surface'
       }`}
     >
-      <AppText
-        variant="label"
-        tabular
-        className={selected ? 'text-on-primary' : ''}
-        accessibilityLabel={formatTime(slot.start, timeZone)}
-      >
+      <AppText variant="label" tabular className={selected ? 'text-on-primary' : ''}>
         {formatTime(slot.start, timeZone)}
       </AppText>
     </Pressable>
