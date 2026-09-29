@@ -5,20 +5,20 @@ import { Linking } from 'react-native';
 import { useRepositoriesOrNull } from '@/core/di';
 import { useSessionStore } from '@/core/session';
 import { AppText, Button, Card, Screen, showToast, Skeleton } from '@/core/ui';
-import { useAuthStore } from '@/features/auth/presentation/auth-store';
-import { useCurrentUser } from '@/features/auth/presentation/hooks/use-current-user';
+import { useBusiness } from '@/features/catalog/presentation/hooks/use-business';
 import { useReminderPermission } from '@/features/notifications/presentation/hooks/use-reminder-permission';
 import { unregisterPushToken } from '@/features/notifications/presentation/unregister-push-token';
 
-// Minimal version: phase 11 adds theme selection and profile editing.
+import { AppearanceSection } from '../components/appearance-section';
+import { ProfileSection } from '../components/profile-section';
+
 export default function SettingsScreen() {
   const mode = useSessionStore((s) => s.mode);
   const demoRole = useSessionStore((s) => s.demoRole);
   const setDemoRole = useSessionStore((s) => s.setDemoRole);
   const exitDemo = useSessionStore((s) => s.exitDemo);
   const repositories = useRepositoriesOrNull();
-  const email = useAuthStore((s) => s.session?.email);
-  const user = useCurrentUser();
+  const business = useBusiness();
   const [signingOut, setSigningOut] = useState(false);
   const permission = useReminderPermission();
 
@@ -39,21 +39,8 @@ export default function SettingsScreen() {
     <Screen scroll edges={['left', 'right']} className="gap-4 pt-4" testID="settings-screen">
       <AppText variant="title">Settings</AppText>
 
-      {mode === 'demo' ? (
-        <Card className="gap-3">
-          <AppText variant="subtitle">Demo</AppText>
-          <AppText tone="muted" variant="caption">
-            You are exploring as {demoRole}. Data lives in memory and resets when the app closes.
-          </AppText>
-          <Button
-            title="Switch role (demo)"
-            variant="secondary"
-            onPress={() => setDemoRole(demoRole === 'admin' ? 'client' : 'admin')}
-            testID="demo-switch-role"
-          />
-          <Button title="Exit demo" variant="danger" onPress={exitDemo} testID="demo-exit" />
-        </Card>
-      ) : null}
+      <ProfileSection />
+      <AppearanceSection />
 
       <Card className="gap-3" testID="reminders-section">
         <AppText variant="subtitle">Reminders</AppText>
@@ -82,15 +69,23 @@ export default function SettingsScreen() {
         )}
       </Card>
 
-      {mode === 'supabase' ? (
-        <Card className="gap-3">
+      {mode === 'demo' ? (
+        <Card className="gap-3" testID="demo-section">
+          <AppText variant="subtitle">Demo</AppText>
+          <AppText tone="muted" variant="caption">
+            You are exploring as {demoRole}. Data lives in memory and resets when the app closes.
+          </AppText>
+          <Button
+            title={demoRole === 'admin' ? 'Explore as: Client' : 'Explore as: Admin'}
+            variant="secondary"
+            onPress={() => setDemoRole(demoRole === 'admin' ? 'client' : 'admin')}
+            testID="demo-switch-role"
+          />
+          <Button title="Exit demo" variant="danger" onPress={exitDemo} testID="demo-exit" />
+        </Card>
+      ) : (
+        <Card className="gap-3" testID="account-section">
           <AppText variant="subtitle">Account</AppText>
-          {user ? <AppText testID="settings-name">{user.fullName}</AppText> : null}
-          {email ? (
-            <AppText tone="muted" variant="caption" testID="settings-email">
-              {email}
-            </AppText>
-          ) : null}
           <Button
             title="Sign out"
             variant="danger"
@@ -99,11 +94,21 @@ export default function SettingsScreen() {
             testID="sign-out-button"
           />
         </Card>
-      ) : null}
+      )}
 
-      <AppText tone="muted" variant="caption">
-        Version {Constants.expoConfig?.version ?? '—'}
-      </AppText>
+      <Card className="gap-2" testID="about-section">
+        <AppText variant="subtitle">About</AppText>
+        <AppText tone="muted" variant="caption" testID="about-version">
+          Version {Constants.expoConfig?.version ?? '—'}
+        </AppText>
+        {business.data ? (
+          <AppText tone="muted" variant="caption" testID="about-timezone">
+            Times are shown in {business.data.name}&apos;s timezone ({business.data.timezone})
+          </AppText>
+        ) : business.isPending ? (
+          <Skeleton className="h-4 w-56" testID="about-loading" />
+        ) : null}
+      </Card>
     </Screen>
   );
 }
