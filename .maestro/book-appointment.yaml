@@ -1,0 +1,37 @@
+appId: com.malpidev.agendo
+name: Book and cancel an appointment (demo)
+---
+- launchApp:
+    clearState: true
+- tapOn:
+    id: 'explore-demo-button'
+- tapOn:
+    id: 'demo-role-client'
+- assertVisible:
+    id: 'demo-badge'
+- tapOn:
+    id: 'service-card-00000000-0000-4000-8000-000000000201' # Classic haircut
+- tapOn:
+    id: 'professional-row-00000000-0000-4000-8000-000000000101' # Marco
+- tapOn:
+    id: 'day-chip-2' # third enabled day: always at least 2 days ahead
+- extendedWaitUntil:
+    visible:
+      id: 'slot-chip-.*'
+    timeout: 10000
+- tapOn:
+    id: 'slot-chip-.*'
+    index: 3 # the demo simulation takes the first slot
+- tapOn:
+    id: 'confirm-booking-button'
+- extendedWaitUntil:
+    visible:
+      id: 'appointment-detail'
+    timeout: 10000
+- tapOn:
+    id: 'cancel-appointment-button'
+- tapOn: 'Cancel appointment' # native alert button
+- assertVisible: 'Cancelled'
+- back # leave the detail screen
+- tapOn: 'Appointments' # tab
+- assertVisible: 'Classic haircut'

@@ -1,0 +1,18 @@
+appId: com.malpidev.agendo
+name: Admin sees the day's agenda (demo)
+---
+- launchApp:
+    clearState: true
+- tapOn:
+    id: 'explore-demo-button'
+- tapOn:
+    id: 'demo-role-admin'
+- tapOn: 'Agenda'
+- runFlow:
+    when:
+      visible: 'No appointments for this day' # e.g. on Sundays the shop is closed
+    commands:
+      - tapOn:
+          id: 'agenda-next-day'
+- assertVisible:
+    id: 'agenda-group-00000000-0000-4000-8000-000000000101' # Marco
