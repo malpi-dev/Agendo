@@ -1,6 +1,7 @@
 import { addDaysToLocalDate, zonedInstant, type LocalDate } from '@/core/time';
 import type { AgendoSupabaseClient } from '@/core/supabase/client';
 import { run } from '@/core/supabase/run';
+import { subscribeToBroadcast } from '@/core/supabase/subscribe-broadcast';
 import { toAppointment } from '@/features/appointments/data/mappers';
 import type { Appointment } from '@/features/appointments/domain/appointment';
 import type { LiveStatus, Unsubscribe } from '@/features/booking/domain/types';
@@ -33,10 +34,15 @@ export class SupabaseAgendaRepository implements AgendaRepository {
     return rows.map(toAppointment);
   }
 
-  /** Provisional: Realtime arrives in phase 09. */
-  subscribe(_onChange: () => void, onStatus?: (status: LiveStatus) => void): Unsubscribe {
-    onStatus?.('paused');
-    return () => {};
+  /** Only admins may receive this topic (RLS on realtime.messages). */
+  subscribe(onChange: () => void, onStatus?: (status: LiveStatus) => void): Unsubscribe {
+    return subscribeToBroadcast(
+      this.client,
+      'agendo:agenda',
+      'appointment_changed',
+      onChange,
+      onStatus,
+    );
   }
 
   private businessTimezone(): Promise<string> {

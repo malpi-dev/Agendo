@@ -3,7 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useRepositories } from '@/core/di';
 import { queryKeys } from '@/core/query';
 
-export function useProfessionals(serviceId: string) {
+export function useProfessionals(serviceId?: string) {
   const { catalog } = useRepositories();
   return useQuery({
     queryKey: queryKeys.professionals(serviceId),

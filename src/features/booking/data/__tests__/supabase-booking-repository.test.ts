@@ -98,11 +98,39 @@ describe('SupabaseBookingRepository', () => {
     });
   });
 
-  it('subscribeToAvailability is provisional: reports paused and returns a no-op unsubscribe', () => {
-    const { repo } = setup();
+  it('subscribes to the private availability topic of the professional', async () => {
+    const { fake, repo } = setup();
+    const onChange = jest.fn();
     const onStatus = jest.fn();
-    const unsubscribe = repo.subscribeToAvailability('p1', jest.fn(), onStatus);
-    expect(onStatus).toHaveBeenCalledWith('paused');
-    expect(() => unsubscribe()).not.toThrow();
+    const off = repo.subscribeToAvailability('p1', onChange, onStatus);
+    await new Promise((r) => setImmediate(r));
+    expect(fake.channels[0]).toMatchObject({
+      topic: 'agendo:availability:p1',
+      options: { config: { private: true } },
+    });
+    fake.channels[0]!.status('SUBSCRIBED');
+    expect(onStatus).toHaveBeenLastCalledWith('live');
+    fake.channels[0]!.emit('appointment_changed');
+    expect(onChange).toHaveBeenCalledTimes(1);
+    off();
+    expect(fake.removeChannel).toHaveBeenCalledTimes(1);
+  });
+
+  it('subscribes to the private availability topic of the professional', async () => {
+    const { fake, repo } = setup();
+    const onChange = jest.fn();
+    const onStatus = jest.fn();
+    const off = repo.subscribeToAvailability('p1', onChange, onStatus);
+    await new Promise((r) => setImmediate(r));
+    expect(fake.channels[0]).toMatchObject({
+      topic: 'agendo:availability:p1',
+      options: { config: { private: true } },
+    });
+    fake.channels[0]!.status('SUBSCRIBED');
+    expect(onStatus).toHaveBeenLastCalledWith('live');
+    fake.channels[0]!.emit('appointment_changed');
+    expect(onChange).toHaveBeenCalledTimes(1);
+    off();
+    expect(fake.removeChannel).toHaveBeenCalledTimes(1);
   });
 });

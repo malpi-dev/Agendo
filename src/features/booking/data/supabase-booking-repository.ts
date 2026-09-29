@@ -1,5 +1,6 @@
 import type { AgendoSupabaseClient } from '@/core/supabase/client';
 import { run } from '@/core/supabase/run';
+import { subscribeToBroadcast } from '@/core/supabase/subscribe-broadcast';
 import type { Appointment } from '@/features/appointments/domain/appointment';
 import { toAppointment } from '@/features/appointments/data/mappers';
 import { DomainError } from '@/core/errors';
@@ -43,14 +44,18 @@ export class SupabaseBookingRepository implements BookingRepository {
     return this.readExpanded(updated.id);
   }
 
-  /** Provisional: Realtime arrives in phase 09. */
   subscribeToAvailability(
-    _professionalId: string,
-    _onChange: () => void,
+    professionalId: string,
+    onChange: () => void,
     onStatus?: (status: LiveStatus) => void,
   ): Unsubscribe {
-    onStatus?.('paused');
-    return () => {};
+    return subscribeToBroadcast(
+      this.client,
+      `agendo:availability:${professionalId}`,
+      'appointment_changed',
+      onChange,
+      onStatus,
+    );
   }
 
   private async readExpanded(id: string): Promise<Appointment> {

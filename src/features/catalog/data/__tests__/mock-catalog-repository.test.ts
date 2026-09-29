@@ -17,6 +17,11 @@ describe('MockCatalogRepository', () => {
     expect(pros.map((p) => p.name)).toEqual(['Sam']);
   });
 
+  it('lists every active professional when no service is given', async () => {
+    const pros = await repo().listProfessionals();
+    expect(pros.map((p) => p.name)).toEqual(['Marco', 'Lena', 'Sam']);
+  });
+
   it('throws notFound for unknown ids', async () => {
     await expect(repo().getService('nope')).rejects.toMatchObject({ code: 'notFound' });
     await expect(repo().getProfessional('nope')).rejects.toBeInstanceOf(DomainError);

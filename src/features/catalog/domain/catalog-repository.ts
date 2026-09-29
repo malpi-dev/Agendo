@@ -9,8 +9,8 @@ export interface CatalogRepository {
   listServices(): Promise<Service[]>;
   /** @throws DomainError('notFound') */
   getService(id: string): Promise<Service>;
-  /** Active professionals offering the service. */
-  listProfessionals(serviceId: string): Promise<Professional[]>;
+  /** Active professionals offering the service; all active professionals when no service is given. */
+  listProfessionals(serviceId?: string): Promise<Professional[]>;
   /** @throws DomainError('notFound') */
   getProfessional(id: string): Promise<Professional>;
   getWorkingHours(professionalId: string): Promise<WorkingHours[]>;
