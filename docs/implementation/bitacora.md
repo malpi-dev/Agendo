@@ -5,9 +5,9 @@
 
 ## Avance
 
-`███████████░░` 11/13 fases terminadas (85 %)
+`████████████░` 12/13 fases terminadas (92 %)
 
-**Fase actual:** Fase 12 · E2E y CI (⏳, por empezar)
+**Fase actual:** Fase 13 · Lanzamiento (⏳, por empezar)
 **Última actualización:** 2026-09-29
 **Ventana planificada:** semana 1 (28 sep – 4 oct 2026); pulido y release antes del 11 oct.
 
@@ -26,7 +26,7 @@
 | 09 | Realtime y agenda | `feat/fase-09-realtime-y-agenda` | ✅ Terminada | 2026-09-28 | 2026-09-28 |
 | 10 | Notificaciones | `feat/fase-10-notificaciones` | ✅ Terminada | 2026-09-29 | 2026-09-29 |
 | 11 | Ajustes y pulido | `feat/fase-11-ajustes-y-pulido` | ✅ Terminada | 2026-09-29 | 2026-09-29 |
-| 12 | E2E y CI | `feat/fase-12-e2e-y-ci` | ⏳ Pendiente | — | — |
+| 12 | E2E y CI | `feat/fase-12-e2e-y-ci` | ✅ Terminada | 2026-09-29 | 2026-09-29 |
 | 13 | Lanzamiento | `feat/fase-13-lanzamiento` | ⏳ Pendiente | — | — |
 
 Estados: ⏳ Pendiente · 🚧 En progreso · ✅ Terminada · ⛔ Bloqueada
@@ -56,6 +56,22 @@ Estados: ⏳ Pendiente · 🚧 En progreso · ✅ Terminada · ⛔ Bloqueada
 > - **PR:** enlace o número.
 > - **Decisiones:** qué se decidió y por qué (también va a la tabla de abajo si cambia la definición).
 > - **Pendientes:** lo que quedó para otra fase (con el número de fase destino).
+
+### Fase 12 · E2E y CI — 2026-09-29
+- **Hecho:**
+  - Maestro 2.10.0 (Java 17). Flujos en `.maestro/`: `book-appointment.yaml` (explorar demo como cliente, servicio, profesional, día, horario, confirmar, cancelar, ver en Appointments) y `admin-agenda.yaml` (demo como admin, agenda con el grupo de Marco). Script `npm run e2e`. Ejecutados en emulador (Pixel_10_Pro) sobre build **release** local: **3 corridas seguidas, 2/2 flujos en verde cada vez**.
+  - `.github/workflows/release.yml`: en tags `v*`, check (lint + typecheck + tests) y luego build EAS `preview` y GitHub Release con el APK. **No** ejecutado (sin tag).
+  - `.github/workflows/keep-alive.yml`: cron cada 3 días (`0 12 */3 * *`) + `workflow_dispatch`, GET liviano a `agendo.business`. **No** ejecutado contra el remoto.
+  - `ci.yml` (fase 01) ya corría lint + typecheck + format:check + tests en cada PR y push a `main`; sin cambios.
+  - **Bug encontrado por el E2E:** en una build release, el arranque en frío caía en `verify` ("Enter your code") en vez de `sign-in`, dejando sin acceso a *Explore demo*. Corregido con `unstable_settings = { anchor: 'sign-in' }` en `src/app/(auth)/_layout.tsx`.
+- **PR:** ver historial de `main` (squash de `feat/fase-12-e2e-y-ci`).
+- **Decisiones:** ver tabla.
+- **Cómo repetir el E2E local:** hace falta `android/` regenerado (`npx expo prebuild --platform android --clean`) y variables de build que fuercen la pantalla de login: `EXPO_PUBLIC_DATA_SOURCE=supabase` con URL/clave ficticias (el `.env` local usa `mock`, que arranca directo en demo y el botón *Explore demo* no existe), y `GOOGLE_SERVICES_JSON` apuntando a un `google-services.json` (ficticio sirve para E2E). Luego `npx expo run:android --variant release --no-bundler` y `npm run e2e`. Si Gradle reutiliza un bundle viejo, borrar `android/app/build/generated/assets`.
+- **Pendientes (🙋 autor):**
+  1. Secretos de GitHub: `gh secret set EXPO_TOKEN` (token de expo.dev), `SUPABASE_URL` y `SUPABASE_PUBLISHABLE_KEY` (proyecto remoto, fase 13).
+  2. `eas init` / `extra.eas.projectId` y variables EAS del entorno `preview` (`EXPO_PUBLIC_SUPABASE_URL`, `EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY`, `EXPO_PUBLIC_DATA_SOURCE=supabase`, `GOOGLE_SERVICES_JSON` como archivo secreto) con `eas env:create`: fase 13.
+  3. Validar `release.yml` y `keep-alive.yml` en la fase 13 (primer tag y `workflow_dispatch`). GitHub desactiva los workflows programados tras 60 días sin actividad: documentarlo en el README.
+  4. Maestro no corre en CI (necesita emulador); es manual con `npm run e2e`.
 
 ### Fase 11 · Ajustes y pulido — 2026-09-29
 - **Hecho:**
@@ -231,6 +247,8 @@ _Entradas anteriores: ninguna._
 | 2026-09-25 | Plan | Los días de calendario se representan como `LocalDate` (`'YYYY-MM-DD'` en la zona del negocio). | Evita errores de zona horaria del dispositivo. |
 | 2026-09-25 | 01 | La plantilla actual de `create-expo-app` (SDK 57) coloca el router en `src/app/` (no en `app/` raíz). Se mantiene esa convención (Expo Router la soporta de forma nativa) en vez de moverlo a `app/` raíz como sugería el archivo de fase. | Es la estructura oficial vigente de `create-expo-app`; moverla sería pelear contra la CLI sin beneficio real. |
 | 2026-09-25 | 01 | `react-native-url-polyfill` sí sigue siendo necesario con `@supabase/supabase-js` 2.117.2 (confirmado en `SupabaseClient.ts` del paquete instalado). | La guía de fase pedía verificarlo antes de instalar. |
+| 2026-09-29 | 12 | `(auth)/_layout.tsx` exporta `unstable_settings = { anchor: 'sign-in' }`. | Sin ancla, el arranque en frío de la build release aterrizaba en `verify`. |
+| 2026-09-29 | 12 | Los flujos de Maestro no corren en CI; el keep-alive y el release quedan sin ejecutar hasta la fase 13. | Requieren emulador / secretos y remoto que aún no existen. |
 | 2026-09-29 | 11 | Paleta clara ajustada por contraste AA: `text-muted` `#5B6472`, `accent` `#B4321F`, `success` `#166534`, `warning` `#92400E` (en `global.css` y `tokens.ts`). | Los valores anteriores daban 2,75–4,28:1 como texto/fondo de Badge, LiveIndicator y Toast. El coral de marca `#F97360` se conserva en el ícono. |
 | 2026-09-29 | 11 | `getAvailableSlots` recibe `ignoreRange` (la cita que se reprograma) y `useAvailableSlots` lo obtiene con `rescheduleId`. | Corrige que el horario actual de la propia cita apareciera ocupado; la BD ya ignora la fila propia en el `UPDATE`. |
 | 2026-09-29 | 11 | `jest.setup-after-env.js` cierra el toast tras cada test. | El temporizador de 2,5 s mantenía vivo el worker de Jest ("failed to exit gracefully"). |

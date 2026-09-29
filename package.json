@@ -70,6 +70,7 @@
     "format:check": "prettier --check .",
     "test": "jest",
     "test:watch": "jest --watch",
+    "e2e": "maestro test .maestro/",
     "db:types": "supabase gen types typescript --local --schema agendo > src/core/supabase/database.generated.ts"
   },
   "private": true
