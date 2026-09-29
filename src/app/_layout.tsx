@@ -30,8 +30,12 @@ import { Button, ErrorState, showToast, ToastHost } from '@/core/ui';
 import { useAuthStore } from '@/features/auth/presentation/auth-store';
 import { useAuthBootstrap } from '@/features/auth/presentation/hooks/use-auth-bootstrap';
 import { useMyProfile } from '@/features/auth/presentation/hooks/use-my-profile';
+import { configureNotifications } from '@/features/notifications/presentation/notifications-service';
+import { useNotificationObserver } from '@/features/notifications/presentation/hooks/use-notification-observer';
+import { unregisterPushToken } from '@/features/notifications/presentation/unregister-push-token';
 
 void SplashScreen.preventAutoHideAsync();
+void configureNotifications().catch(() => undefined);
 
 function RootNavigator({ fontsReady }: { fontsReady: boolean }) {
   const repositories = useRepositoriesOrNull();
@@ -44,6 +48,8 @@ function RootNavigator({ fontsReady }: { fontsReady: boolean }) {
   const hasProfile = profileLoaded && profileQuery.data !== null;
   const needsOnboarding = profileLoaded && profileQuery.data === null;
   const profileFailed = signedIn && profileQuery.isError;
+
+  useNotificationObserver(isDemo || (signedIn && hasProfile));
 
   // Keep the splash until we know where to go, so no intermediate screen is visible.
   const resolved = isDemo || authStatus === 'signedOut' || profileLoaded || profileFailed;
@@ -81,7 +87,10 @@ function RootNavigator({ fontsReady }: { fontsReady: boolean }) {
             title="Sign out"
             variant="ghost"
             testID="profile-error-sign-out"
-            onPress={() => void repositories?.auth.signOut()}
+            onPress={() => {
+              if (!repositories) return;
+              void unregisterPushToken(repositories).then(() => repositories.auth.signOut());
+            }}
           />
         </View>
       </View>

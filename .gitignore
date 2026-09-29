@@ -52,3 +52,6 @@ example
 # generated native folders
 /ios
 /android
+
+# Firebase config (FCM); provided via GOOGLE_SERVICES_JSON in EAS
+google-services.json

@@ -19,10 +19,12 @@ import type { BookingRepository } from '@/features/booking/domain/booking-reposi
 import { MockCatalogRepository } from '@/features/catalog/data/mock-catalog-repository';
 import { SupabaseCatalogRepository } from '@/features/catalog/data/supabase-catalog-repository';
 import type { CatalogRepository } from '@/features/catalog/domain/catalog-repository';
+import { MockPushTokenRepository } from '@/features/notifications/data/mock-push-token-repository';
+import { SupabasePushTokenRepository } from '@/features/notifications/data/supabase-push-token-repository';
+import type { PushTokenRepository } from '@/features/notifications/domain/push-token-repository';
 import type { MockDb } from '@/features/demo/data/mock-db';
 
 // Composition root: the only place in core/ that imports from features/*/data.
-// Push tokens are added in phase 10.
 export interface Repositories {
   catalog: CatalogRepository;
   booking: BookingRepository;
@@ -30,6 +32,7 @@ export interface Repositories {
   agenda: AgendaRepository;
   auth: AuthRepository;
   profile: ProfileRepository;
+  pushTokens: PushTokenRepository;
 }
 
 export function createMockRepositories(db: MockDb): Repositories {
@@ -44,6 +47,7 @@ export function createMockRepositories(db: MockDb): Repositories {
       { id: db.currentUser.id, fullName: db.currentUser.fullName, role: db.currentUser.role },
       db.currentUser.id,
     ),
+    pushTokens: new MockPushTokenRepository(),
   };
 }
 
@@ -56,6 +60,7 @@ export function createSupabaseRepositories(client: AgendoSupabaseClient): Reposi
     agenda: new SupabaseAgendaRepository(client, catalog),
     auth: new SupabaseAuthRepository(client),
     profile: new SupabaseProfileRepository(client),
+    pushTokens: new SupabasePushTokenRepository(client),
   };
 }
 
