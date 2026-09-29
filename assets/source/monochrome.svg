@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+  <!-- Android 13+ themed icon: single-colour silhouette inside the safe zone. -->
+  <defs>
+    <mask id="cut">
+      <rect width="1024" height="1024" fill="#FFFFFF"/>
+      <path d="M348 620l114 114 214-236" fill="none" stroke="#000000" stroke-width="72" stroke-linecap="round" stroke-linejoin="round"/>
+    </mask>
+  </defs>
+  <g transform="translate(512 512) scale(0.9) translate(-512 -528)" fill="#FFFFFF">
+    <rect x="192" y="232" width="640" height="592" rx="120" mask="url(#cut)"/>
+    <rect x="332" y="160" width="60" height="140" rx="30"/>
+    <rect x="632" y="160" width="60" height="140" rx="30"/>
+  </g>
+</svg>
