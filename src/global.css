@@ -5,15 +5,15 @@
 :root {
   --color-primary: 15 118 110; /* #0F766E */
   --color-on-primary: 255 255 255;
-  --color-accent: 249 115 96; /* #F97360 */
+  --color-accent: 180 50 31; /* #B4321F */
   --color-background: 247 248 246;
   --color-surface: 255 255 255;
   --color-surface-muted: 238 242 240;
   --color-text: 17 24 39;
-  --color-text-muted: 107 114 128;
+  --color-text-muted: 91 100 114;
   --color-border: 226 232 228;
-  --color-success: 22 163 74;
-  --color-warning: 217 119 6;
+  --color-success: 22 101 52;
+  --color-warning: 146 64 14;
   --color-danger: 220 38 38;
 }
 
