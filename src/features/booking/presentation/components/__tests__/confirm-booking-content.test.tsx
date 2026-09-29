@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react-native';
+import { act, fireEvent, screen, waitFor } from '@testing-library/react-native';
 
 import { DomainError } from '@/core/errors';
 import { at } from '@/features/booking/domain/__tests__/test-fixtures';
@@ -51,7 +51,7 @@ describe('ConfirmBookingContent', () => {
   it('calls onConflict when the slot was just taken', async () => {
     const onConflict = jest.fn();
     const onBooked = jest.fn();
-    await renderWithProviders(
+    const { queryClient } = await renderWithProviders(
       <ConfirmBookingContent {...props} onBooked={onBooked} onConflict={onConflict} />,
       {
         repositories: { booking: failingBooking('slotUnavailable') },
@@ -60,6 +60,18 @@ describe('ConfirmBookingContent', () => {
     await waitFor(() => expect(screen.getByTestId('confirm-booking-button')).toBeTruthy());
     await fireEvent.press(screen.getByTestId('confirm-booking-button'));
     await waitFor(() => expect(onConflict).toHaveBeenCalledTimes(1));
+    // Let the mutation state and the invalidation refetches settle inside the test.
+    await waitFor(() => expect(queryClient.isMutating()).toBe(0));
+    await waitFor(() => expect(queryClient.isFetching()).toBe(0));
+    await waitFor(() =>
+      expect(screen.getByTestId('confirm-booking-button').props.accessibilityState.busy).toBe(
+        false,
+      ),
+    );
+    // Flush TanStack Query's batched notifications (setTimeout 0) while still inside act().
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 0));
+    });
     expect(onBooked).not.toHaveBeenCalled();
   });
 
