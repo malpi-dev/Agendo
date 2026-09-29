@@ -23,3 +23,18 @@ jest.mock('react-native-reanimated', () => {
     LinearTransition: animation,
   };
 });
+
+// Native notification APIs do not exist under Jest. Tests override the return values they care about.
+jest.mock('expo-notifications', () => ({
+  setNotificationHandler: jest.fn(),
+  setNotificationChannelAsync: jest.fn(() => Promise.resolve(null)),
+  getPermissionsAsync: jest.fn(() => Promise.resolve({ granted: false })),
+  requestPermissionsAsync: jest.fn(() => Promise.resolve({ granted: false })),
+  getExpoPushTokenAsync: jest.fn(() => Promise.resolve({ data: 'ExponentPushToken[test]' })),
+  scheduleNotificationAsync: jest.fn(() => Promise.resolve('id')),
+  getLastNotificationResponse: jest.fn(() => null),
+  clearLastNotificationResponse: jest.fn(),
+  addNotificationResponseReceivedListener: jest.fn(() => ({ remove: jest.fn() })),
+  AndroidImportance: { HIGH: 4 },
+  SchedulableTriggerInputTypes: { TIME_INTERVAL: 'timeInterval' },
+}));

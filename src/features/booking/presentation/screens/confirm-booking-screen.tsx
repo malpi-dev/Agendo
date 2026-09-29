@@ -7,6 +7,8 @@ import { DomainError } from '@/core/errors';
 import { queryKeys } from '@/core/query';
 import { ErrorState, Screen, showToast } from '@/core/ui';
 import type { Appointment } from '@/features/appointments/domain/appointment';
+import { useBusiness } from '@/features/catalog/presentation/hooks/use-business';
+import { scheduleDemoReminderIfDemo } from '@/features/notifications/presentation/schedule-demo-reminder-if-demo';
 
 import { ConfirmBookingContent } from '../components/confirm-booking-content';
 
@@ -20,6 +22,7 @@ const paramsSchema = z.object({
 export default function ConfirmBookingScreen() {
   const rawParams = useLocalSearchParams();
   const queryClient = useQueryClient();
+  const business = useBusiness();
   const parsed = paramsSchema.safeParse(rawParams);
 
   if (!parsed.success) {
@@ -34,6 +37,7 @@ export default function ConfirmBookingScreen() {
   const onBooked = (appointment: Appointment) => {
     void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     showToast('Booked!', 'success');
+    if (business.data) void scheduleDemoReminderIfDemo(appointment, business.data.timezone);
     router.dismissAll();
     router.push({ pathname: '/appointments/[id]', params: { id: appointment.id } });
   };

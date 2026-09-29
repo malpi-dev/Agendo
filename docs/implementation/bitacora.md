@@ -5,10 +5,10 @@
 
 ## Avance
 
-`█████████░░░░` 9/13 fases terminadas (69 %)
+`██████████░░░` 10/13 fases terminadas (77 %)
 
-**Fase actual:** Fase 10 · Notificaciones (⏳, por empezar)
-**Última actualización:** 2026-09-28
+**Fase actual:** Fase 11 · Ajustes y pulido (⏳, por empezar)
+**Última actualización:** 2026-09-29
 **Ventana planificada:** semana 1 (28 sep – 4 oct 2026); pulido y release antes del 11 oct.
 
 ## Estado por fase
@@ -24,7 +24,7 @@
 | 07 | Auth | `feat/fase-07-auth` | ✅ Terminada | 2026-09-28 | 2026-09-28 |
 | 08 | Mis citas | `feat/fase-08-mis-citas` | ✅ Terminada | 2026-09-28 | 2026-09-28 |
 | 09 | Realtime y agenda | `feat/fase-09-realtime-y-agenda` | ✅ Terminada | 2026-09-28 | 2026-09-28 |
-| 10 | Notificaciones | `feat/fase-10-notificaciones` | ⏳ Pendiente | — | — |
+| 10 | Notificaciones | `feat/fase-10-notificaciones` | ✅ Terminada | 2026-09-29 | 2026-09-29 |
 | 11 | Ajustes y pulido | `feat/fase-11-ajustes-y-pulido` | ⏳ Pendiente | — | — |
 | 12 | E2E y CI | `feat/fase-12-e2e-y-ci` | ⏳ Pendiente | — | — |
 | 13 | Lanzamiento | `feat/fase-13-lanzamiento` | ⏳ Pendiente | — | — |
@@ -56,6 +56,24 @@ Estados: ⏳ Pendiente · 🚧 En progreso · ✅ Terminada · ⛔ Bloqueada
 > - **PR:** enlace o número.
 > - **Decisiones:** qué se decidió y por qué (también va a la tabla de abajo si cambia la definición).
 > - **Pendientes:** lo que quedó para otra fase (con el número de fase destino).
+
+### Fase 10 · Notificaciones — 2026-09-29
+- **Hecho:**
+  - Dependencias `expo-notifications`, `expo-device` y `expo-dev-client` (`expo install`); plugin `expo-notifications` (color `#0F766E`, canal por defecto `reminders`) en `app.json`; `app.config.ts` que añade `android.googleServicesFile` (`GOOGLE_SERVICES_JSON` o `./google-services.json`); `eas.json` con perfiles `development` / `preview` (APK) / `production`; `google-services.json` en `.gitignore` (`android/` e `ios/` ya lo estaban).
+  - Migración `20260929000000_agendo_reminders.sql`: extensiones `pg_cron`/`pg_net`, RPC `agendo.claim_due_reminders()` (atómica, `security definer`, solo `service_role`) y job `agendo-reminders` cada 5 min (recreado por nombre, idempotente) que llama a la Edge Function con los secretos de Vault `agendo_functions_base_url` y `agendo_reminders_cron_secret`. `supabase/seed/03_local_vault.sql` (solo local) añadido a `[db.seed].sql_paths`.
+  - pgTAP `supabase/tests/agendo_reminders.test.sql` (10 tests: reclama la cita a 90 min, la segunda llamada no devuelve nada, ignora canceladas / fuera de ventana / ya empezadas, `authenticated` y `anon` no pueden ejecutarla, el job existe). `supabase db reset && supabase test db`: 34 tests en verde.
+  - Edge Function `agendo-send-reminders` (`verify_jwt = false`, valida `x-cron-secret`, lotes de 100 a la API de Expo, borra tokens `DeviceNotRegistered`, logs sin datos personales) + `supabase/functions/.env.example`. Probada en local con `supabase functions serve`: 401 sin secreto; con una cita a 75 min y un token falso reclama 1, la API de Expo responde `DeviceNotRegistered`, el token se borra y la segunda llamada devuelve `claimed: 0`.
+  - App: `PushTokenRepository` con implementaciones Supabase (`upsert` por `token`) y mock, añadido a `Repositories`; `notifications-service` (canal, permisos, token, recordatorio local demo a los 10 s), store Zustand, `usePushRegistration` (una vez por usuario, no bloquea), `useNotificationObserver` (deep link en frío y en caliente a `/appointments/<id>`, espera a que la app esté visible), `unregisterPushToken` antes de cerrar sesión, recordatorio local tras reservar en modo demo y sección *Reminders* en Ajustes (On / Reminders disabled + Open settings / Not available on this device / carga).
+  - Tests: servicio (emulador, denegado, concedido, sin projectId, fallo de token), repos push, hooks (registro único, demo, observador cold/warm), Ajustes y recordatorio demo. 280 tests en verde; lint (max-warnings 0), typecheck y format sin errores.
+- **PR:** #11 (squash de `feat/fase-10-notificaciones`).
+- **Decisiones:** ver tabla (`getLastNotificationResponse` síncrono, secret key, exclusión de `supabase/functions` de tsc).
+- **Pendientes (🙋 autor, no se hicieron por límites de seguridad: sin EAS/remoto):**
+  1. `eas login` + `eas init` (escribe `extra.eas.projectId` en `app.json`; sin él `getExpoPushTokenAsync` no puede dar token y la app queda en "Not available") y crear el Expo access token (enhanced push security) para `AGENDO_EXPO_ACCESS_TOKEN` en `supabase/functions/.env` local.
+  2. Proyecto Firebase con app Android `com.malpidev.agendo`, `google-services.json` en la raíz (no se commitea) y subir la clave FCM V1 con `eas credentials`.
+  3. Development build en un teléfono físico (`npx expo run:android --device` o `eas build -p android --profile development`) y verificación del Paso 6 (F5 CA1–CA6 en dispositivo).
+  4. Fase 13 (remoto): `supabase secrets set AGENDO_EXPO_ACCESS_TOKEN=… AGENDO_REMINDERS_CRON_SECRET=…`, desplegar `agendo-send-reminders`, crear los secretos de Vault `agendo_functions_base_url` / `agendo_reminders_cron_secret` (valor aleatorio, el mismo que el secreto de la función), aplicar la migración con `psql "$SUPABASE_DB_URL" -f …` y subir `GOOGLE_SERVICES_JSON` como variable de archivo en EAS.
+  - En local, la Edge Function ya funciona; para que `pg_cron` la alcance desde el contenedor hace falta `supabase functions serve --env-file supabase/functions/.env` mientras se prueba.
+  - Nombre real de la variable de la secret key en Edge Functions: `SUPABASE_SECRET_KEYS` (diccionario JSON, clave `default`), con `SUPABASE_SERVICE_ROLE_KEY` como respaldo.
 
 ### Fase 09 · Realtime y agenda — 2026-09-28
 - **Hecho:**
@@ -183,6 +201,11 @@ _Entradas anteriores: ninguna._
 | 2026-09-25 | Plan | Los días de calendario se representan como `LocalDate` (`'YYYY-MM-DD'` en la zona del negocio). | Evita errores de zona horaria del dispositivo. |
 | 2026-09-25 | 01 | La plantilla actual de `create-expo-app` (SDK 57) coloca el router en `src/app/` (no en `app/` raíz). Se mantiene esa convención (Expo Router la soporta de forma nativa) en vez de moverlo a `app/` raíz como sugería el archivo de fase. | Es la estructura oficial vigente de `create-expo-app`; moverla sería pelear contra la CLI sin beneficio real. |
 | 2026-09-25 | 01 | `react-native-url-polyfill` sí sigue siendo necesario con `@supabase/supabase-js` 2.117.2 (confirmado en `SupabaseClient.ts` del paquete instalado). | La guía de fase pedía verificarlo antes de instalar. |
+| 2026-09-29 | 10 | Se usa `Notifications.getLastNotificationResponse()` / `clearLastNotificationResponse()` (síncronos) en vez de `getLastNotificationResponseAsync`. | La versión Async está deprecada en `expo-notifications` de SDK 57. |
+| 2026-09-29 | 10 | La Edge Function lee la secret key de `SUPABASE_SECRET_KEYS.default` (con `SUPABASE_SERVICE_ROLE_KEY` de respaldo). | Es el nombre vigente en la documentación de Supabase. |
+| 2026-09-29 | 10 | `supabase/functions` se excluye de `tsc` (`tsconfig.json`) y de ESLint. | Es código Deno (imports `npm:`), no compilable con la config de React Native. |
+| 2026-09-29 | 10 | `eas.json` se escribió a mano y no se ejecutó `eas init`/`eas build:configure`. | No se crean cuentas ni proyectos EAS sin el autor; `extra.eas.projectId` queda pendiente. |
+| 2026-09-29 | 10 | En modo demo el permiso de notificaciones y el estado de Ajustes se evalúan como notificación local (también en emulador). | El push remoto solo existe en dispositivo físico, pero la notificación local de la demo funciona en cualquier sitio. |
 | 2026-09-28 | 09 | El canal de disponibilidad es `agendo:availability:<professional_id>` (el que ya crean el trigger y la política de la fase 04), no `agendo:slots:<professional_id>` como sugiere el `CLAUDE.md` de la carpeta contenedora. | Cambiarlo exige modificar migraciones ya aplicadas; el patrón `agendo:<tema>:<id>` de la convención se cumple igual. Pendiente que el autor decida si actualiza el `CLAUDE.md` o renombra el canal. |
 | 2026-09-28 | 09 | La lógica de suscripción vive en un helper `subscribeToBroadcast` en `core/supabase/` en vez de duplicarse en los dos repositorios. | Ambos repos usan el mismo protocolo (canal privado + `setAuth` + re-suscripción); una sola implementación y un solo test. |
 | 2026-09-28 | 08 | `jest.setup.js` mockea `@shopify/flash-list` con `src/test/flash-list-mock.tsx` (renderiza todas las filas) en vez de usar `@shopify/flash-list/jestSetup`. | El `jestSetup` incluido en 2.0.2 referencia `RecyclerView`, que el paquete ya no exporta, y rompe el render. |

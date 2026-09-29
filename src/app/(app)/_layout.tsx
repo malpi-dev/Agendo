@@ -1,9 +1,12 @@
 import { Stack } from 'expo-router';
 
 import { useThemeColors } from '@/core/theme';
+import { useCurrentUser } from '@/features/auth/presentation/hooks/use-current-user';
+import { usePushRegistration } from '@/features/notifications/presentation/hooks/use-push-registration';
 
 export default function AppLayout() {
   const colors = useThemeColors();
+  usePushRegistration(useCurrentUser()?.id);
   return (
     <Stack
       screenOptions={{
